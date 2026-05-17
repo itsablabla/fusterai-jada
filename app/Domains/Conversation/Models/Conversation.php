@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -25,7 +26,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Mailbox|null $mailbox
  * @property-read Customer|null $customer
  * @property-read User|null $assignedUser
- * @property-read User|null $assignee
  */
 class Conversation extends Model
 {
@@ -34,6 +34,7 @@ class Conversation extends Model
 
     use LogsActivity;
     use Searchable;
+    use SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -112,12 +113,6 @@ class Conversation extends Model
     }
 
     public function assignedUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'assigned_user_id');
-    }
-
-    /** Alias for assignedUser — used by MCP tools and search. */
-    public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
     }

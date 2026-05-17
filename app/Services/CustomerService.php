@@ -20,10 +20,12 @@ class CustomerService
 
     public function search(int $workspaceId, string $query): Collection
     {
+        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
         return Customer::where('workspace_id', $workspaceId)
             ->where(fn ($q) => $q
-                ->where('name', 'ilike', "%{$query}%")
-                ->orWhere('email', 'ilike', "%{$query}%")
+                ->where('name', $op, "%{$query}%")
+                ->orWhere('email', $op, "%{$query}%")
             )
             ->orderBy('name')
             ->limit(10)

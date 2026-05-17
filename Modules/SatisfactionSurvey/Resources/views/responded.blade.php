@@ -13,24 +13,32 @@
   .emoji { font-size: 56px; margin-bottom: 16px; display: block; }
   h1 { margin: 0 0 8px; font-size: 22px; color: #18181b; font-weight: 700; }
   p  { margin: 0 0 4px; color: #71717a; font-size: 15px; line-height: 1.5; }
-  .badge { display: inline-block; margin-top: 20px; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 600; }
-  .badge-good { background: #f0fdf4; color: #16a34a; }
-  .badge-bad  { background: #fef2f2; color: #dc2626; }
+  .stars { font-size: 32px; margin: 20px 0 8px; letter-spacing: 2px; }
+  .score { font-size: 14px; color: #a1a1aa; }
 </style>
 </head>
 <body>
   <div class="card">
-    @if($rating === 'good')
+    @if($rating >= 4)
       <span class="emoji">😊</span>
       <h1>Glad we could help!</h1>
       <p>Thanks for the positive feedback. It means a lot to the team at {{ $mailboxName }}.</p>
-      <span class="badge badge-good">👍 Good experience</span>
+    @elseif($rating === 3)
+      <span class="emoji">😐</span>
+      <h1>Thanks for your feedback.</h1>
+      <p>We appreciate you taking the time to let us know. The team at {{ $mailboxName }} will use your feedback to improve.</p>
     @else
       <span class="emoji">😔</span>
       <h1>We're sorry to hear that.</h1>
       <p>Your feedback has been recorded. The team at {{ $mailboxName }} will use it to improve.</p>
-      <span class="badge badge-bad">👎 Needs improvement</span>
     @endif
+
+    <div class="stars">
+      @for($i = 1; $i <= 5; $i++)
+        {{ $i <= $rating ? '★' : '☆' }}
+      @endfor
+    </div>
+    <p class="score">{{ $rating }}/5</p>
   </div>
 </body>
 </html>

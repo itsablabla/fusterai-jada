@@ -9,14 +9,16 @@ use App\Http\Requests\Settings\UpdateMailboxesRequest;
 use App\Http\Requests\Settings\UpdateUserRequest;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
     public function __construct(private UserService $service) {}
 
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
 
@@ -48,7 +50,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
         $this->authorize('create', User::class);
 
@@ -57,7 +59,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Invitation sent to '.$user->email.'.');
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $this->authorize('update', $user);
 
@@ -66,7 +68,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User updated successfully.');
     }
 
-    public function destroy(Request $request, User $user)
+    public function destroy(Request $request, User $user): RedirectResponse
     {
         $this->authorize('delete', $user);
         $this->service->delete($user);
@@ -74,7 +76,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User removed successfully.');
     }
 
-    public function updateMailboxes(UpdateMailboxesRequest $request, User $user)
+    public function updateMailboxes(UpdateMailboxesRequest $request, User $user): RedirectResponse
     {
         $this->authorize('update', $user);
 

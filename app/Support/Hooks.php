@@ -10,9 +10,23 @@ class Hooks
 
     protected static array $filters = [];
 
+    /** Set once by AppServiceProvider after all providers have booted. */
+    protected static bool $booted = false;
+
+    public static function markBooted(): void
+    {
+        static::$booted = true;
+    }
+
     /** Register a callback for an action hook */
     public static function addAction(string $hook, callable $callback, int $priority = 10): void
     {
+        if (static::$booted) {
+            // In Octane workers the process stays alive between requests.
+            // Registering hooks after boot causes them to accumulate indefinitely.
+            Log::warning("Hooks::addAction [{$hook}] registered after application boot — unsafe in Octane.");
+        }
+
         static::$actions[$hook][$priority][] = $callback;
     }
 
@@ -45,6 +59,10 @@ class Hooks
     /** Register a callback for a filter hook */
     public static function addFilter(string $hook, callable $callback, int $priority = 10): void
     {
+        if (static::$booted) {
+            Log::warning("Hooks::addFilter [{$hook}] registered after application boot — unsafe in Octane.");
+        }
+
         static::$filters[$hook][$priority][] = $callback;
     }
 
@@ -78,10 +96,11 @@ class Hooks
         return $value;
     }
 
-    /** Clear all hooks (useful in tests) */
+    /** Clear all hooks and booted state (tests only). */
     public static function reset(): void
     {
         static::$actions = [];
         static::$filters = [];
+        static::$booted = false;
     }
 }

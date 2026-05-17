@@ -8,6 +8,7 @@ use App\Domains\Conversation\Jobs\SendReplyJob;
 use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Thread;
 use App\Domains\Customer\Models\Customer;
+use App\Enums\ChannelType;
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
 use App\Events\ConversationUpdated;
@@ -36,9 +37,9 @@ class ConversationService
                 'mailbox_id' => $validated['mailbox_id'],
                 'customer_id' => $validated['customer_id'],
                 'subject' => $validated['subject'],
-                'status' => 'open',
-                'priority' => 'normal',
-                'channel_type' => 'email',
+                'status' => ConversationStatus::Open,
+                'priority' => ConversationPriority::Normal,
+                'channel_type' => ChannelType::Email,
                 'last_reply_at' => now(),
             ]);
 
@@ -46,6 +47,7 @@ class ConversationService
                 'user_id' => $actor->id,
                 'type' => 'message',
                 'body' => $validated['body'],
+                'body_plain' => strip_tags($validated['body']),
                 'source' => 'web',
             ]);
 
@@ -80,9 +82,9 @@ class ConversationService
                 'mailbox_id' => $validated['mailbox_id'] ?? null,
                 'customer_id' => $customer->id,
                 'subject' => $validated['subject'],
-                'status' => $validated['status'] ?? 'open',
-                'priority' => $validated['priority'] ?? 'normal',
-                'channel_type' => 'api',
+                'status' => ConversationStatus::tryFrom($validated['status'] ?? '') ?? ConversationStatus::Open,
+                'priority' => ConversationPriority::tryFrom($validated['priority'] ?? '') ?? ConversationPriority::Normal,
+                'channel_type' => ChannelType::Api,
                 'last_reply_at' => now(),
             ]);
 
@@ -325,5 +327,33 @@ class ConversationService
         });
 
         broadcast(new ConversationUpdated($target->fresh()));
+    }
+
+    /**
+     * Sidebar folder/status counts for a given user.
+     * Single query with conditional aggregates — avoids N separate COUNT queries.
+     */
+    public function folderCounts(User $user): array
+    {
+        $row = DB::table('conversations')
+            ->where('workspace_id', $user->workspace_id)
+            ->selectRaw("
+                COUNT(CASE WHEN status = 'open'    AND (snoozed_until IS NULL OR snoozed_until <= NOW()) THEN 1 END) AS open,
+                COUNT(CASE WHEN status = 'pending'                                                        THEN 1 END) AS pending,
+                COUNT(CASE WHEN status = 'closed'                                                         THEN 1 END) AS closed,
+                COUNT(CASE WHEN status = 'open'    AND (snoozed_until IS NULL OR snoozed_until <= NOW()) AND assigned_user_id = ? THEN 1 END) AS mine,
+                COUNT(CASE WHEN snoozed_until IS NOT NULL AND snoozed_until > NOW()                       THEN 1 END) AS snoozed,
+                COUNT(CASE WHEN starred                                                                THEN 1 END) AS starred
+            ", [$user->id])
+            ->first();
+
+        return [
+            'open' => (int) ($row->open ?? 0),
+            'pending' => (int) ($row->pending ?? 0),
+            'closed' => (int) ($row->closed ?? 0),
+            'mine' => (int) ($row->mine ?? 0),
+            'snoozed' => (int) ($row->snoozed ?? 0),
+            'starred' => (int) ($row->starred ?? 0),
+        ];
     }
 }

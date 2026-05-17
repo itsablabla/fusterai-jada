@@ -19,7 +19,7 @@ class SurveyController extends Controller
 
         $request->validate([
             'conversation' => ['required', 'integer', 'exists:conversations,id'],
-            'rating' => ['required', 'in:good,bad'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
         ]);
 
         $conversation = Conversation::findOrFail($request->conversation);

@@ -45,14 +45,7 @@ class KnowledgeBaseController extends Controller
     {
         $this->authorize('create', KnowledgeBase::class);
 
-        $validated = $request->validated();
-
-        $kb = KnowledgeBase::create([
-            'workspace_id' => $request->user()->workspace_id,
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'active' => true,
-        ]);
+        $kb = $this->service->create($request->user()->workspace_id, $request->validated());
 
         return redirect()->route('ai.knowledge-bases.show', $kb)
             ->with('success', 'Knowledge base created.');

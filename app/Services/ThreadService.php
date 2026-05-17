@@ -7,6 +7,7 @@ use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Thread;
 use App\Enums\ChannelType;
 use App\Enums\ThreadType;
+use App\Events\ConversationUpdated;
 use App\Events\NewThreadReceived;
 use App\Models\ConversationRead;
 use App\Models\User;
@@ -37,6 +38,7 @@ class ThreadService
             'user_id' => $actor->id,
             'type' => $type,
             'body' => $body,
+            'body_plain' => strip_tags($body),
             'source' => $isChat ? 'chat' : 'web',
             'send_at' => $sendAt,
         ]);
@@ -58,6 +60,8 @@ class ThreadService
             if (! $sendAt) {
                 broadcast(new NewThreadReceived($thread));
             }
+
+            broadcast(new ConversationUpdated($conversation->fresh()));
 
             if (! $isChat) {
                 $pending = SendReplyJob::dispatch($thread, $conversation, $sendAt)->onQueue('email-outbound');

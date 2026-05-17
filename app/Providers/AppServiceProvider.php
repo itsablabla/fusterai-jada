@@ -21,6 +21,7 @@ use App\Policies\KnowledgeBasePolicy;
 use App\Policies\MailboxPolicy;
 use App\Policies\TagPolicy;
 use App\Policies\UserPolicy;
+use App\Support\Hooks;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
@@ -70,6 +71,10 @@ class AppServiceProvider extends ServiceProvider
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(SecurityScheme::http('bearer'));
             });
+
+        // Mark hooks as booted — any hook registered after this point is post-boot
+        // and will log a warning (unsafe in Octane workers where process persists across requests).
+        $this->app->booted(fn () => Hooks::markBooted());
 
         // Share data with all Inertia pages
         // Note: auth, flash, mailboxes, tags, branding, appearance are shared via HandleInertiaRequests

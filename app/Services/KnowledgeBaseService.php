@@ -9,6 +9,16 @@ use App\Domains\AI\Models\KnowledgeBase;
 
 class KnowledgeBaseService
 {
+    public function create(int $workspaceId, array $validated): KnowledgeBase
+    {
+        return KnowledgeBase::create([
+            'workspace_id' => $workspaceId,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'active' => true,
+        ]);
+    }
+
     public function createDocument(KnowledgeBase $kb, array $validated): KbDocument
     {
         /** @var KbDocument $document */

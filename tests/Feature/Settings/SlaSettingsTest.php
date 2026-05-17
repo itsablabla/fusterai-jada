@@ -28,10 +28,33 @@ beforeEach(function () {
     Cache::forget('module.active.SlaManager');
 });
 
-test('sla settings page is accessible to authenticated users', function () {
+test('sla settings page is accessible to admins', function () {
     $this->actingAs($this->admin)
         ->get('/settings/sla')
         ->assertOk();
+});
+
+test('agent cannot access sla settings page', function () {
+    $agent = User::factory()->create(['workspace_id' => $this->workspace->id, 'role' => 'agent']);
+
+    $this->actingAs($agent)
+        ->get('/settings/sla')
+        ->assertForbidden();
+});
+
+test('agent cannot update sla policies', function () {
+    $agent = User::factory()->create(['workspace_id' => $this->workspace->id, 'role' => 'agent']);
+
+    $policies = [
+        ['priority' => 'urgent', 'first_response_minutes' => 1,  'resolution_minutes' => 1, 'active' => true],
+        ['priority' => 'high',   'first_response_minutes' => 1,  'resolution_minutes' => 1, 'active' => true],
+        ['priority' => 'normal', 'first_response_minutes' => 1,  'resolution_minutes' => 1, 'active' => true],
+        ['priority' => 'low',    'first_response_minutes' => 1,  'resolution_minutes' => 1, 'active' => true],
+    ];
+
+    $this->actingAs($agent)
+        ->post('/settings/sla', ['policies' => $policies])
+        ->assertForbidden();
 });
 
 test('sla settings page returns policies with defaults', function () {

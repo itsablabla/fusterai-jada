@@ -33,13 +33,15 @@ class SearchConversations extends Tool
         $status = $request->string('status');
         $limit = min((int) ($request->get('limit', 10)), 25);
 
-        $builder = Conversation::with(['customer', 'assignee'])
+        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $builder = Conversation::with(['customer', 'assignedUser'])
             ->where('workspace_id', $this->workspaceId)
             ->where(fn ($q) => $q
-                ->where('subject', 'ilike', "%{$query}%")
+                ->where('subject', $op, "%{$query}%")
                 ->orWhereHas('customer', fn ($cq) => $cq
-                    ->where('name', 'ilike', "%{$query}%")
-                    ->orWhere('email', 'ilike', "%{$query}%")
+                    ->where('name', $op, "%{$query}%")
+                    ->orWhere('email', $op, "%{$query}%")
                 )
             );
 
@@ -53,7 +55,7 @@ class SearchConversations extends Tool
             'status' => $c->status,
             'priority' => $c->priority,
             'customer' => "{$c->customer?->name} <{$c->customer?->email}>",
-            'assignee' => $c->assignee?->name,
+            'assignee' => $c->assignedUser?->name,
             'updated' => $c->updated_at->toDateTimeString(),
         ]);
 

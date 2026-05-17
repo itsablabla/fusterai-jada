@@ -14,10 +14,11 @@ class ReportsService
     public function stats(int $workspaceId, int $days): array
     {
         $since = now()->subDays($days);
-        $base = Conversation::where('workspace_id', $workspaceId);
+        $base = Conversation::where('workspace_id', $workspaceId)->where('created_at', '>=', $since);
 
         $counts = DB::table('conversations')
             ->where('workspace_id', $workspaceId)
+            ->where('created_at', '>=', $since)
             ->selectRaw("
                 COUNT(*) as total,
                 COUNT(CASE WHEN status = 'open'    THEN 1 END) as open,
@@ -33,7 +34,6 @@ class ReportsService
             'closed' => $counts->closed,
 
             'trend' => (clone $base)
-                ->where('created_at', '>=', $since)
                 ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
                 ->groupBy('date')
                 ->orderBy('date')
@@ -68,7 +68,6 @@ class ReportsService
             'avg_resolution_hours' => round(
                 (clone $base)
                     ->where('status', 'closed')
-                    ->where('created_at', '>=', $since)
                     ->whereNotNull('last_reply_at')
                     ->selectRaw(
                         DB::connection()->getDriverName() === 'pgsql'

@@ -18,6 +18,8 @@ class MailboxController extends Controller
 
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Mailbox::class);
+
         $mailboxes = Mailbox::where('workspace_id', $request->user()->workspace_id)
             ->withCount([
                 'conversations',

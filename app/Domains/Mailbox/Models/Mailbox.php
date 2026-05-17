@@ -45,6 +45,7 @@ class Mailbox extends Model
         'ai_config',
         'channel_type',
         'active',
+        'webhook_token',
     ];
 
     protected $casts = [

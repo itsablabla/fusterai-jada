@@ -21,6 +21,7 @@ class SurveyResponse extends Model
     ];
 
     protected $casts = [
+        'rating' => 'integer',
         'responded_at' => 'datetime',
     ];
 
@@ -34,8 +35,9 @@ class SurveyResponse extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function isGood(): bool
+    /** Ratings of 4 or 5 are considered positive (satisfied). */
+    public function isPositive(): bool
     {
-        return $this->rating === 'good';
+        return $this->rating >= 4;
     }
 }

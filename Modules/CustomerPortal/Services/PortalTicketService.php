@@ -34,6 +34,7 @@ class PortalTicketService
                 'customer_id' => $customer->id,
                 'type' => ThreadType::Message,
                 'body' => $body,
+                'body_plain' => strip_tags($body),
                 'source' => 'portal',
             ]);
 
@@ -54,6 +55,7 @@ class PortalTicketService
                 'customer_id' => $customer->id,
                 'type' => ThreadType::Message,
                 'body' => $body,
+                'body_plain' => strip_tags($body),
                 'source' => 'portal',
             ]);
 

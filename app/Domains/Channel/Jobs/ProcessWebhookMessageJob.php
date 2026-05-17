@@ -7,6 +7,8 @@ use App\Domains\AI\Jobs\GenerateReplySuggestionJob;
 use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Customer\Models\Customer;
 use App\Domains\Mailbox\Models\Mailbox;
+use App\Enums\ChannelType;
+use App\Enums\ConversationStatus;
 use App\Events\ConversationUpdated;
 use App\Events\NewThreadReceived;
 use App\Services\AiSettingsService;
@@ -69,8 +71,8 @@ class ProcessWebhookMessageJob implements ShouldQueue
                 'mailbox_id' => $mailbox->id,
                 'customer_id' => $customer->id,
                 'subject' => $subject,
-                'status' => 'open',
-                'channel_type' => 'api',
+                'status' => ConversationStatus::Open,
+                'channel_type' => ChannelType::Api,
                 'last_reply_at' => now(),
             ]);
         }
@@ -89,7 +91,7 @@ class ProcessWebhookMessageJob implements ShouldQueue
             ],
         ]);
 
-        $conversation->update(['status' => 'open', 'last_reply_at' => now()]);
+        $conversation->update(['status' => ConversationStatus::Open, 'last_reply_at' => now()]);
 
         // Fire module hooks
         if ($isNew) {

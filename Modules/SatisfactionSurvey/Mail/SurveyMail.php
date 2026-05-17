@@ -11,10 +11,12 @@ class SurveyMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @param  array<int, string>  $ratingUrls  Keys 1–5, values are signed URLs
+     */
     public function __construct(
         public readonly Conversation $conversation,
-        public readonly string $goodUrl,
-        public readonly string $badUrl,
+        public readonly array $ratingUrls,
     ) {}
 
     public function build(): static

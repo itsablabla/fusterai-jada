@@ -4,6 +4,7 @@ namespace App\Domains\Conversation\Jobs;
 
 use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Thread;
+use App\Enums\ConversationStatus;
 use App\Enums\ThreadType;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -60,7 +61,7 @@ class ProcessBounceJob implements ShouldQueue
 
         if ($this->bounceType === 'hard') {
             // Hard bounce — move to pending so an agent reviews delivery failure
-            $conversation->update(['status' => 'pending']);
+            $conversation->update(['status' => ConversationStatus::Pending]);
         } elseif ($this->bounceType === 'soft' && $bouncedThread) {
             // Soft bounce — temporary failure; retry the send after 30 minutes
             SendReplyJob::dispatch($bouncedThread, $conversation)

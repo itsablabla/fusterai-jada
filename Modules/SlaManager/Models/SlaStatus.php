@@ -77,11 +77,13 @@ class SlaStatus extends Model
             'pause_offset_minutes' => $this->pause_offset_minutes + $pausedMinutes,
         ];
 
-        if ($this->first_response_achieved_at === null) {
-            $updates['first_response_due_at'] = $this->first_response_due_at->addMinutes($pausedMinutes);
+        if ($this->first_response_achieved_at === null && $this->first_response_due_at !== null) {
+            $updates['first_response_due_at'] = $this->first_response_due_at->copy()->addMinutes($pausedMinutes);
         }
 
-        $updates['resolution_due_at'] = $this->resolution_due_at->addMinutes($pausedMinutes);
+        if ($this->resolution_due_at !== null) {
+            $updates['resolution_due_at'] = $this->resolution_due_at->copy()->addMinutes($pausedMinutes);
+        }
 
         $this->update($updates);
     }

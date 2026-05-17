@@ -133,22 +133,7 @@ class SettingsController extends Controller
     {
         $this->authorize('manage-settings');
 
-        // Scan Modules/ directory to discover installed modules from the filesystem.
-        // DB records only exist for modules the user has explicitly enabled/disabled.
-        $discovered = [];
-        $modulesPath = base_path('Modules');
-        if (is_dir($modulesPath)) {
-            foreach (scandir($modulesPath) as $alias) {
-                if ($alias === '.' || $alias === '..') {
-                    continue;
-                }
-                $providerPath = "{$modulesPath}/{$alias}/Providers/{$alias}ServiceProvider.php";
-                if (! is_dir("{$modulesPath}/{$alias}") || ! file_exists($providerPath)) {
-                    continue;
-                }
-                $discovered[] = $alias;
-            }
-        }
+        $discovered = $this->discoverModuleAliases();
 
         // Load any DB records for discovered modules
         $dbModules = Module::whereIn('alias', $discovered)->get()->keyBy('alias');
@@ -177,21 +162,7 @@ class SettingsController extends Controller
         $this->authorize('manage-settings');
 
         // Validate alias against discovered modules to prevent path traversal
-        $modulesPath = base_path('Modules');
-        $discovered = [];
-        if (is_dir($modulesPath)) {
-            foreach (scandir($modulesPath) as $entry) {
-                if ($entry === '.' || $entry === '..') {
-                    continue;
-                }
-                $providerPath = "{$modulesPath}/{$entry}/Providers/{$entry}ServiceProvider.php";
-                if (is_dir("{$modulesPath}/{$entry}") && file_exists($providerPath)) {
-                    $discovered[] = $entry;
-                }
-            }
-        }
-
-        if (! in_array($alias, $discovered, true)) {
+        if (! in_array($alias, $this->discoverModuleAliases(), true)) {
             abort(404, 'Module not found.');
         }
 
@@ -207,10 +178,16 @@ class SettingsController extends Controller
         if ($active) {
             $migrationPath = base_path("Modules/{$alias}/Database/Migrations");
             if (is_dir($migrationPath)) {
-                Artisan::call('migrate', [
-                    '--path' => "Modules/{$alias}/Database/Migrations",
-                    '--force' => true,
-                ]);
+                try {
+                    Artisan::call('migrate', [
+                        '--path' => "Modules/{$alias}/Database/Migrations",
+                        '--force' => true,
+                    ]);
+                } catch (\Throwable $e) {
+                    $module->update(['active' => false]);
+
+                    return back()->withErrors(['module' => 'Migration failed: '.$e->getMessage()]);
+                }
             }
         }
 
@@ -326,10 +303,11 @@ class SettingsController extends Controller
             ->where('created_at', '>=', now()->subDays($days));
 
         if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('description', 'ilike', "%{$search}%")
-                    ->orWhere('log_name', 'ilike', "%{$search}%")
-                    ->orWhere('subject_type', 'ilike', "%{$search}%");
+            $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $op) {
+                $q->where('description', $op, "%{$search}%")
+                    ->orWhere('log_name', $op, "%{$search}%")
+                    ->orWhere('subject_type', $op, "%{$search}%");
             });
         }
 
@@ -338,5 +316,28 @@ class SettingsController extends Controller
             'days' => $days,
             'search' => $search,
         ]);
+    }
+
+    /** Scan Modules/ and return aliases of properly-structured modules. */
+    private function discoverModuleAliases(): array
+    {
+        $discovered = [];
+        $modulesPath = base_path('Modules');
+
+        if (! is_dir($modulesPath)) {
+            return $discovered;
+        }
+
+        foreach (scandir($modulesPath) as $alias) {
+            if ($alias === '.' || $alias === '..') {
+                continue;
+            }
+            $providerPath = "{$modulesPath}/{$alias}/Providers/{$alias}ServiceProvider.php";
+            if (is_dir("{$modulesPath}/{$alias}") && file_exists($providerPath)) {
+                $discovered[] = $alias;
+            }
+        }
+
+        return $discovered;
     }
 }

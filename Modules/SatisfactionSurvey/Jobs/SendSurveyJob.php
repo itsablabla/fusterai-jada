@@ -45,19 +45,16 @@ class SendSurveyJob implements ShouldQueue
             return;
         }
 
-        $goodUrl = URL::temporarySignedRoute(
-            'survey.respond',
-            now()->addDays(7),
-            ['conversation' => $this->conversation->id, 'rating' => 'good']
-        );
-
-        $badUrl = URL::temporarySignedRoute(
-            'survey.respond',
-            now()->addDays(7),
-            ['conversation' => $this->conversation->id, 'rating' => 'bad']
-        );
+        $ratingUrls = [];
+        foreach (range(1, 5) as $score) {
+            $ratingUrls[$score] = URL::temporarySignedRoute(
+                'survey.respond',
+                now()->addDays(7),
+                ['conversation' => $this->conversation->id, 'rating' => $score]
+            );
+        }
 
         Mail::to($customer->email, $customer->name)
-            ->send(new SurveyMail($this->conversation, $goodUrl, $badUrl));
+            ->send(new SurveyMail($this->conversation, $ratingUrls));
     }
 }

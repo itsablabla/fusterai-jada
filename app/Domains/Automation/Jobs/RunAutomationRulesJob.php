@@ -7,6 +7,7 @@ use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Folder;
 use App\Domains\Conversation\Models\Tag;
 use App\Domains\Mailbox\Models\Mailbox;
+use App\Events\ConversationUpdated;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -99,20 +100,21 @@ class RunAutomationRulesJob implements ShouldQueue
     private function executeActions(array $actions): void
     {
         $conv = $this->conversation;
+        $updates = [];
 
         foreach ($actions as $action) {
             $type = $action['type'] ?? '';
             $value = $action['value'] ?? null;
 
             match ($type) {
-                'set_status' => $conv->update(['status' => $value]),
-                'set_priority' => $conv->update(['priority' => $value]),
+                'set_status' => $updates['status'] = $value,
+                'set_priority' => $updates['priority'] = $value,
                 'assign_to' => User::where('id', $value)
                     ->where('workspace_id', $conv->workspace_id)
                     ->exists()
-                    ? $conv->update(['assigned_user_id' => $value])
+                    ? ($updates['assigned_user_id'] = $value)
                     : null,
-                'unassign' => $conv->update(['assigned_user_id' => null]),
+                'unassign' => $updates['assigned_user_id'] = null,
                 'add_tag' => $conv->tags()->syncWithoutDetaching(
                     Tag::where('workspace_id', $conv->workspace_id)
                         ->where('name', $value)->pluck('id')
@@ -124,10 +126,15 @@ class RunAutomationRulesJob implements ShouldQueue
                 'move_mailbox' => Mailbox::where('id', $value)
                     ->where('workspace_id', $conv->workspace_id)
                     ->exists()
-                    ? $conv->update(['mailbox_id' => $value])
+                    ? ($updates['mailbox_id'] = $value)
                     : null,
                 default => null,
             };
+        }
+
+        if ($updates) {
+            $conv->update($updates);
+            broadcast(new ConversationUpdated($conv->fresh()));
         }
     }
 }

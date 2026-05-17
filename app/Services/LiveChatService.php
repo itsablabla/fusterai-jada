@@ -5,7 +5,10 @@ namespace App\Services;
 use App\Domains\Channel\Jobs\HandleLiveChatMessageJob;
 use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Customer\Models\Customer;
+use App\Enums\ChannelType;
+use App\Enums\ConversationStatus;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class LiveChatService
 {
@@ -27,24 +30,29 @@ class LiveChatService
             ['name' => $validated['visitor_name'] ?? 'Visitor'],
         );
 
-        $conversation = Conversation::where('workspace_id', $validated['workspace_id'])
-            ->where('customer_id', $customer->id)
-            ->where('channel_type', 'chat')
-            ->where('status', 'open')
-            ->latest()
-            ->first();
+        $conversation = DB::transaction(function () use ($validated, $customer) {
+            $existing = Conversation::where('workspace_id', $validated['workspace_id'])
+                ->where('customer_id', $customer->id)
+                ->where('channel_type', ChannelType::Chat)
+                ->where('status', ConversationStatus::Open)
+                ->latest()
+                ->lockForUpdate()
+                ->first();
 
-        if (! $conversation) {
-            $conversation = Conversation::create([
+            if ($existing) {
+                return $existing;
+            }
+
+            return Conversation::create([
                 'workspace_id' => $validated['workspace_id'],
                 'customer_id' => $customer->id,
                 'subject' => 'Live chat with '.($validated['visitor_name'] ?? 'Visitor'),
-                'status' => 'open',
-                'channel_type' => 'chat',
+                'status' => ConversationStatus::Open,
+                'channel_type' => ChannelType::Chat,
                 'channel_id' => $validated['visitor_id'],
                 'last_reply_at' => now(),
             ]);
-        }
+        });
 
         HandleLiveChatMessageJob::dispatch(
             $conversation,
@@ -76,7 +84,7 @@ class LiveChatService
         $conversation = Conversation::where('id', $conversationId)
             ->where('workspace_id', $workspaceId)
             ->where('customer_id', $customer->id)
-            ->where('channel_type', 'chat')
+            ->where('channel_type', ChannelType::Chat)
             ->first();
 
         if (! $conversation) {

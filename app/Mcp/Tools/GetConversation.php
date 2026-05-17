@@ -31,7 +31,7 @@ class GetConversation extends Tool
     public function handle(Request $request): Response
     {
         $id = (int) $request->get('conversation_id');
-        $conversation = Conversation::with(['customer', 'threads', 'tags', 'assignee'])
+        $conversation = Conversation::with(['customer', 'threads', 'tags', 'assignedUser'])
             ->where('workspace_id', $this->workspaceId)
             ->find($id);
 
@@ -59,7 +59,7 @@ class GetConversation extends Tool
                 'name' => $conversation->customer?->name,
                 'email' => $conversation->customer?->email,
             ],
-            'assignee' => $conversation->assignee?->name,
+            'assignee' => $conversation->assignedUser?->name,
             'tags' => $conversation->tags->pluck('name'),
             'ai_summary' => $conversation->ai_summary,
             'threads' => $threads,

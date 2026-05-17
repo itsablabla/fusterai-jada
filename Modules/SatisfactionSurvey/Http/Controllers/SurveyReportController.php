@@ -22,8 +22,9 @@ class SurveyReportController extends Controller
             ->where('survey_responses.responded_at', '>=', now()->subDays($days));
 
         $total = (clone $base)->count();
-        $good = (clone $base)->where('survey_responses.rating', 'good')->count();
-        $bad = $total - $good;
+        $avgScore = $total > 0 ? round((clone $base)->avg('survey_responses.rating'), 1) : null;
+        $satisfied = (clone $base)->where('survey_responses.rating', '>=', 4)->count();
+        $satisfactionRate = $total > 0 ? round(($satisfied / $total) * 100) : null;
 
         $recent = (clone $base)
             ->select([
@@ -38,7 +39,7 @@ class SurveyReportController extends Controller
             ->get()
             ->map(fn ($r) => [
                 'id' => $r->id,
-                'rating' => $r->rating,
+                'rating' => (int) $r->rating,
                 'responded_at' => $r->responded_at,
                 'conversation_id' => $r->conversation_id,
                 'subject' => $r->subject,
@@ -47,9 +48,9 @@ class SurveyReportController extends Controller
         return Inertia::render('Settings/SurveyReport', [
             'stats' => [
                 'total' => $total,
-                'good' => $good,
-                'bad' => $bad,
-                'score' => $total > 0 ? round(($good / $total) * 100) : null,
+                'avg_score' => $avgScore,
+                'satisfied' => $satisfied,
+                'satisfaction_rate' => $satisfactionRate,
             ],
             'recent' => $recent,
             'days' => $days,

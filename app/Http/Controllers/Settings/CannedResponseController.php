@@ -76,8 +76,9 @@ class CannedResponseController extends Controller
                 }
             })
             ->where(function ($q) use ($query) {
-                $q->where('name', 'ilike', "%{$query}%")
-                    ->orWhere('content', 'ilike', "%{$query}%");
+                $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+                $q->where('name', $op, "%{$query}%")
+                    ->orWhere('content', $op, "%{$query}%");
             })
             ->orderByRaw('mailbox_id IS NULL ASC') // mailbox-specific first
             ->orderBy('name')

@@ -29,7 +29,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,6 +44,15 @@ class ConversationController extends Controller
             ->where('workspace_id', $user->workspace_id)
             ->with(['customer', 'mailbox', 'assignedUser', 'tags'])
             ->orderByDesc('last_reply_at');
+
+        // Non-admin agents with explicit mailbox assignments can only see those mailboxes.
+        // Agents with no assignments see everything (backward-compatible default).
+        if (! $user->isAdmin()) {
+            $allowedMailboxIds = $user->mailboxes()->pluck('mailboxes.id');
+            if ($allowedMailboxIds->isNotEmpty()) {
+                $query->whereIn('mailbox_id', $allowedMailboxIds);
+            }
+        }
 
         // Resolve custom view and merge its filters (URL params take precedence)
         $activeView = null;
@@ -138,7 +146,7 @@ class ConversationController extends Controller
         $mailboxes = Mailbox::where('workspace_id', $user->workspace_id)->get(['id', 'name', 'email']);
         $tags = Tag::where('workspace_id', $user->workspace_id)->get(['id', 'name', 'color']);
         $folders = Folder::where('workspace_id', $user->workspace_id)->orderBy('order')->get(['id', 'name', 'color', 'icon']);
-        $counts = $this->folderCounts($user);
+        $counts = $this->service->folderCounts($user);
         $agents = User::where('workspace_id', $user->workspace_id)->get(['id', 'name', 'avatar', 'status']);
 
         $selected = null;
@@ -321,31 +329,6 @@ class ConversationController extends Controller
         $this->service->changeMailbox($conversation, $request->mailbox_id, $request->user());
 
         return back();
-    }
-
-    private function folderCounts(User $user): array
-    {
-        // Single query with conditional aggregates — avoids 5 separate COUNT queries.
-        $row = DB::table('conversations')
-            ->where('workspace_id', $user->workspace_id)
-            ->selectRaw("
-                COUNT(CASE WHEN status = 'open'    AND (snoozed_until IS NULL OR snoozed_until <= NOW()) THEN 1 END) AS open,
-                COUNT(CASE WHEN status = 'pending'                                                        THEN 1 END) AS pending,
-                COUNT(CASE WHEN status = 'closed'                                                         THEN 1 END) AS closed,
-                COUNT(CASE WHEN status = 'open'    AND (snoozed_until IS NULL OR snoozed_until <= NOW()) AND assigned_user_id = ? THEN 1 END) AS mine,
-                COUNT(CASE WHEN snoozed_until IS NOT NULL AND snoozed_until > NOW()                       THEN 1 END) AS snoozed,
-                COUNT(CASE WHEN starred = true                                                            THEN 1 END) AS starred
-            ", [$user->id])
-            ->first();
-
-        return [
-            'open' => (int) ($row->open ?? 0),
-            'pending' => (int) ($row->pending ?? 0),
-            'closed' => (int) ($row->closed ?? 0),
-            'mine' => (int) ($row->mine ?? 0),
-            'snoozed' => (int) ($row->snoozed ?? 0),
-            'starred' => (int) ($row->starred ?? 0),
-        ];
     }
 
     // ── Read / Unread ─────────────────────────────────────────────────────────

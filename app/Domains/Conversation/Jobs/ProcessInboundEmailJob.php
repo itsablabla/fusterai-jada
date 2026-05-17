@@ -8,6 +8,8 @@ use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Thread;
 use App\Domains\Customer\Models\Customer;
 use App\Domains\Mailbox\Models\Mailbox;
+use App\Enums\ChannelType;
+use App\Enums\ConversationStatus;
 use App\Events\ConversationUpdated;
 use App\Events\NewThreadReceived;
 use App\Models\User;
@@ -86,8 +88,14 @@ class ProcessInboundEmailJob implements ShouldQueue
                 if ($decoded === false) {
                     continue; // skip malformed attachment content
                 }
-                $safeFilename = Str::slug(pathinfo($att['name'], PATHINFO_FILENAME))
-                    .'.'.pathinfo($att['name'], PATHINFO_EXTENSION);
+                $ext = strtolower(pathinfo($att['name'], PATHINFO_EXTENSION));
+                // Blocklist server-executable extensions to prevent accidental execution
+                // if the storage disk is ever misconfigured to serve files directly.
+                $dangerousExtensions = ['php', 'phtml', 'phar', 'php5', 'php7', 'sh', 'bash', 'py', 'rb', 'pl', 'cgi', 'exe', 'bat', 'cmd'];
+                if (in_array($ext, $dangerousExtensions, true) || $ext === '') {
+                    $ext = 'bin';
+                }
+                $safeFilename = Str::slug(pathinfo($att['name'], PATHINFO_FILENAME) ?: 'attachment').'.'.$ext;
                 $path = 'attachments/'.$conversation->id.'/'.Str::uuid().'_'.$safeFilename;
                 Storage::put($path, $decoded);
                 $thread->attachments()->create([
@@ -99,7 +107,7 @@ class ProcessInboundEmailJob implements ShouldQueue
             }
 
             $conversation->update([
-                'status' => 'open',
+                'status' => ConversationStatus::Open,
                 'last_reply_at' => now(),
             ]);
 
@@ -135,7 +143,7 @@ class ProcessInboundEmailJob implements ShouldQueue
         if ($conversation->wasRecentlyCreated) {
             $customer = Customer::find($conversation->customer_id);
             if ($customer?->is_blocked) {
-                $conversation->update(['status' => 'spam']);
+                $conversation->update(['status' => ConversationStatus::Spam]);
                 broadcast(new ConversationUpdated($conversation->fresh()));
             } else {
                 SendAutoReplyJob::dispatch($conversation)->onQueue('email-outbound');
@@ -169,8 +177,8 @@ class ProcessInboundEmailJob implements ShouldQueue
                 'workspace_id' => $mailbox->workspace_id,
                 'customer_id' => $customer->id,
                 'subject' => $this->normalizeSubject($data['subject'] ?: '(No Subject)'),
-                'status' => 'open',
-                'channel_type' => 'email',
+                'status' => ConversationStatus::Open,
+                'channel_type' => ChannelType::Email,
                 'last_reply_at' => now(),
             ],
         );

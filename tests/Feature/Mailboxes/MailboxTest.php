@@ -49,7 +49,9 @@ test('admin can create a mailbox', function () {
         ])
         ->assertRedirect(route('mailboxes.index'));
 
-    expect(Mailbox::where('name', 'Support')->where('workspace_id', $this->workspace->id)->exists())->toBeTrue();
+    $mailbox = Mailbox::where('name', 'Support')->where('workspace_id', $this->workspace->id)->first();
+    expect($mailbox)->not->toBeNull();
+    expect($mailbox->webhook_token)->not->toBeNull();
 });
 
 test('agent cannot create a mailbox', function () {

@@ -97,7 +97,7 @@ test('survey is not sent when a response already exists', function () {
     SurveyResponse::create([
         'conversation_id' => $conversation->id,
         'customer_id' => $this->customer->id,
-        'rating' => 'good',
+        'rating' => 5,
         'responded_at' => now(),
     ]);
 
@@ -125,7 +125,7 @@ test('survey is not sent when surveys are disabled in workspace settings', funct
 
 // ── SurveyController (public respond endpoint) ────────────────────────────────
 
-test('customer can submit a good rating via signed URL', function () {
+test('customer can submit a 5-star rating via signed URL', function () {
     $conversation = Conversation::factory()->create([
         'workspace_id' => $this->workspace->id,
         'mailbox_id' => $this->mailbox->id,
@@ -135,15 +135,15 @@ test('customer can submit a good rating via signed URL', function () {
     $url = URL::temporarySignedRoute(
         'survey.respond',
         now()->addDays(7),
-        ['conversation' => $conversation->id, 'rating' => 'good'],
+        ['conversation' => $conversation->id, 'rating' => 5],
     );
 
     $this->get($url)->assertOk()->assertViewIs('satisfaction-survey::responded');
 
-    expect(SurveyResponse::where('conversation_id', $conversation->id)->where('rating', 'good')->exists())->toBeTrue();
+    expect(SurveyResponse::where('conversation_id', $conversation->id)->where('rating', 5)->exists())->toBeTrue();
 });
 
-test('customer can submit a bad rating via signed URL', function () {
+test('customer can submit a 1-star rating via signed URL', function () {
     $conversation = Conversation::factory()->create([
         'workspace_id' => $this->workspace->id,
         'mailbox_id' => $this->mailbox->id,
@@ -153,12 +153,12 @@ test('customer can submit a bad rating via signed URL', function () {
     $url = URL::temporarySignedRoute(
         'survey.respond',
         now()->addDays(7),
-        ['conversation' => $conversation->id, 'rating' => 'bad'],
+        ['conversation' => $conversation->id, 'rating' => 1],
     );
 
     $this->get($url)->assertOk();
 
-    expect(SurveyResponse::where('conversation_id', $conversation->id)->where('rating', 'bad')->exists())->toBeTrue();
+    expect(SurveyResponse::where('conversation_id', $conversation->id)->where('rating', 1)->exists())->toBeTrue();
 });
 
 test('survey respond rejects an invalid signature', function () {
@@ -168,7 +168,7 @@ test('survey respond rejects an invalid signature', function () {
         'customer_id' => $this->customer->id,
     ]);
 
-    $this->get("/survey/respond?conversation={$conversation->id}&rating=good")
+    $this->get("/survey/respond?conversation={$conversation->id}&rating=5")
         ->assertForbidden();
 });
 
@@ -182,7 +182,7 @@ test('duplicate survey response is idempotent', function () {
     $url = URL::temporarySignedRoute(
         'survey.respond',
         now()->addDays(7),
-        ['conversation' => $conversation->id, 'rating' => 'good'],
+        ['conversation' => $conversation->id, 'rating' => 5],
     );
 
     $this->get($url)->assertOk();
@@ -240,7 +240,7 @@ test('CSAT report only shows data from the current workspace', function () {
     SurveyResponse::create([
         'conversation_id' => $otherConversation->id,
         'customer_id' => $otherCustomer->id,
-        'rating' => 'good',
+        'rating' => 5,
         'responded_at' => now(),
     ]);
 
@@ -257,18 +257,19 @@ test('CSAT report calculates score correctly', function () {
         'customer_id' => $this->customer->id,
     ]);
 
-    SurveyResponse::create(['conversation_id' => $conversations[0]->id, 'customer_id' => $this->customer->id, 'rating' => 'good', 'responded_at' => now()]);
-    SurveyResponse::create(['conversation_id' => $conversations[1]->id, 'customer_id' => $this->customer->id, 'rating' => 'good', 'responded_at' => now()]);
-    SurveyResponse::create(['conversation_id' => $conversations[2]->id, 'customer_id' => $this->customer->id, 'rating' => 'good', 'responded_at' => now()]);
-    SurveyResponse::create(['conversation_id' => $conversations[3]->id, 'customer_id' => $this->customer->id, 'rating' => 'bad', 'responded_at' => now()]);
+    // ratings: 5, 5, 4, 1 → avg 3.8, satisfied (>=4) = 3, rate = 75%
+    SurveyResponse::create(['conversation_id' => $conversations[0]->id, 'customer_id' => $this->customer->id, 'rating' => 5, 'responded_at' => now()]);
+    SurveyResponse::create(['conversation_id' => $conversations[1]->id, 'customer_id' => $this->customer->id, 'rating' => 5, 'responded_at' => now()]);
+    SurveyResponse::create(['conversation_id' => $conversations[2]->id, 'customer_id' => $this->customer->id, 'rating' => 4, 'responded_at' => now()]);
+    SurveyResponse::create(['conversation_id' => $conversations[3]->id, 'customer_id' => $this->customer->id, 'rating' => 1, 'responded_at' => now()]);
 
     $this->actingAs($this->agent)
         ->get(route('settings.survey.report'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where('stats.total', 4)
-            ->where('stats.good', 3)
-            ->where('stats.bad', 1)
-            ->where('stats.score', 75)
+            ->where('stats.avg_score', 3.8)
+            ->where('stats.satisfied', 3)
+            ->where('stats.satisfaction_rate', 75)
         );
 });

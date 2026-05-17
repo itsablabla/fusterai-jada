@@ -72,9 +72,7 @@ class ConversationApiController extends Controller
      */
     public function show(Request $request, Conversation $conversation): JsonResponse
     {
-        if ($conversation->workspace_id !== $request->user()->workspace_id) {
-            return response()->json(['message' => 'Not found.'], 404);
-        }
+        abort_if($conversation->workspace_id !== $request->user()->workspace_id, 404, 'Not found.');
 
         $conversation->load([
             'customer',
@@ -129,9 +127,7 @@ class ConversationApiController extends Controller
      */
     public function update(UpdateConversationRequest $request, Conversation $conversation): JsonResponse
     {
-        if ($conversation->workspace_id !== $request->user()->workspace_id) {
-            return response()->json(['message' => 'Not found.'], 404);
-        }
+        abort_if($conversation->workspace_id !== $request->user()->workspace_id, 404, 'Not found.');
 
         // Use has() to detect explicitly-sent keys; array_filter would strip intentional nulls (e.g. assigned_user_id: null to unassign)
         $fields = array_filter(
@@ -160,9 +156,7 @@ class ConversationApiController extends Controller
      */
     public function reply(ReplyConversationRequest $request, Conversation $conversation): JsonResponse
     {
-        if ($conversation->workspace_id !== $request->user()->workspace_id) {
-            return response()->json(['message' => 'Not found.'], 404);
-        }
+        abort_if($conversation->workspace_id !== $request->user()->workspace_id, 404, 'Not found.');
 
         $validated = $request->validated();
 

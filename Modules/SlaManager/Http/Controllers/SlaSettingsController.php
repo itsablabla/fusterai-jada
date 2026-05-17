@@ -2,17 +2,22 @@
 
 namespace Modules\SlaManager\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Workspace;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Inertia\Inertia;
+use Inertia\Response;
+use Modules\SlaManager\Http\Requests\UpdateSlaPoliciesRequest;
 use Modules\SlaManager\Models\SlaPolicy;
 
 class SlaSettingsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $workspace = Workspace::find($request->user()->workspace_id);
+        $this->authorize('manage-settings');
+
+        $workspace = Workspace::findOrFail($request->user()->workspace_id);
         $defaults = SlaPolicy::defaults();
 
         $policies = collect(['urgent', 'high', 'normal', 'low'])->map(function ($priority) use ($workspace, $defaults) {
@@ -33,19 +38,13 @@ class SlaSettingsController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(UpdateSlaPoliciesRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'policies' => ['required', 'array', 'size:4'],
-            'policies.*.priority' => ['required', 'string', 'in:urgent,high,normal,low'],
-            'policies.*.first_response_minutes' => ['required', 'integer', 'min:1'],
-            'policies.*.resolution_minutes' => ['required', 'integer', 'min:1'],
-            'policies.*.active' => ['boolean'],
-        ]);
+        $this->authorize('manage-settings');
 
-        $workspace = Workspace::find($request->user()->workspace_id);
+        $workspace = Workspace::findOrFail($request->user()->workspace_id);
 
-        foreach ($validated['policies'] as $p) {
+        foreach ($request->validated()['policies'] as $p) {
             SlaPolicy::updateOrCreate(
                 ['workspace_id' => $workspace->id, 'priority' => $p['priority']],
                 [

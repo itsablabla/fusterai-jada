@@ -8,6 +8,8 @@ use App\Domains\Conversation\Models\Conversation;
 use App\Domains\Conversation\Models\Thread;
 use App\Domains\Customer\Models\Customer;
 use App\Domains\Mailbox\Models\Mailbox;
+use App\Enums\ChannelType;
+use App\Enums\ConversationStatus;
 use App\Events\NewThreadReceived;
 use App\Services\AiSettingsService;
 use App\Support\Hooks;
@@ -77,7 +79,7 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             $conversation = Conversation::where('workspace_id', $this->mailbox->workspace_id)
                 ->where('mailbox_id', $this->mailbox->id)
                 ->where('customer_id', $customer->id)
-                ->where('status', 'open')
+                ->where('status', ConversationStatus::Open)
                 ->first();
 
             if (! $conversation) {
@@ -86,8 +88,8 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
                     'mailbox_id' => $this->mailbox->id,
                     'customer_id' => $customer->id,
                     'subject' => 'WhatsApp: '.Str::limit($body, 60),
-                    'status' => 'open',
-                    'channel_type' => 'whatsapp',
+                    'status' => ConversationStatus::Open,
+                    'channel_type' => ChannelType::WhatsApp,
                     'last_reply_at' => now(),
                 ]);
 

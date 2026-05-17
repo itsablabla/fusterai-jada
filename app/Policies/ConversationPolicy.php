@@ -13,10 +13,23 @@ class ConversationPolicy
         return $user->isSuperAdmin() ? true : null;
     }
 
-    /** Any workspace member can view a conversation. */
+    /** Any workspace member can view a conversation, subject to mailbox access. */
     public function view(User $user, Conversation $conversation): bool
     {
-        return $user->workspace_id === $conversation->workspace_id;
+        if ($user->workspace_id !== $conversation->workspace_id) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Non-admin agents with explicit mailbox assignments are restricted to those mailboxes.
+        // Agents with no assignments can view all conversations (backward-compatible default).
+        $allowedMailboxIds = $user->mailboxes()->pluck('mailboxes.id');
+
+        return $allowedMailboxIds->isEmpty()
+            || $allowedMailboxIds->contains($conversation->mailbox_id);
     }
 
     /**
@@ -25,6 +38,6 @@ class ConversationPolicy
      */
     public function update(User $user, Conversation $conversation): bool
     {
-        return $user->workspace_id === $conversation->workspace_id;
+        return $this->view($user, $conversation);
     }
 }

@@ -52,10 +52,12 @@ class Customer extends Model implements AuthenticatableContract
 
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        return $query->where(function (Builder $q) use ($term) {
-            $q->where('name', 'ilike', "%{$term}%")
-                ->orWhere('email', 'ilike', "%{$term}%")
-                ->orWhere('company', 'ilike', "%{$term}%");
+        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        return $query->where(function (Builder $q) use ($term, $op) {
+            $q->where('name', $op, "%{$term}%")
+                ->orWhere('email', $op, "%{$term}%")
+                ->orWhere('company', $op, "%{$term}%");
         });
     }
 
