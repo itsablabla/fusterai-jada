@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Domains\Customer\Models\Customer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class CustomerService
 {
@@ -20,7 +21,7 @@ class CustomerService
 
     public function search(int $workspaceId, string $query): Collection
     {
-        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $op = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
         return Customer::where('workspace_id', $workspaceId)
             ->where(fn ($q) => $q

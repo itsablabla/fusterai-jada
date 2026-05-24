@@ -8,6 +8,7 @@ use App\Http\Requests\Settings\StoreCannedResponseRequest;
 use App\Http\Requests\Settings\UpdateCannedResponseRequest;
 use App\Models\CannedResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class CannedResponseController extends Controller
@@ -76,7 +77,7 @@ class CannedResponseController extends Controller
                 }
             })
             ->where(function ($q) use ($query) {
-                $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+                $op = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
                 $q->where('name', $op, "%{$query}%")
                     ->orWhere('content', $op, "%{$query}%");
             })

@@ -4,6 +4,7 @@ namespace App\Mcp\Tools;
 
 use App\Domains\Conversation\Models\Conversation;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Facades\DB;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
@@ -33,7 +34,7 @@ class SearchConversations extends Tool
         $status = $request->string('status');
         $limit = min((int) ($request->get('limit', 10)), 25);
 
-        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $op = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
         $builder = Conversation::with(['customer', 'assignedUser'])
             ->where('workspace_id', $this->workspaceId)

@@ -21,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
@@ -303,7 +304,7 @@ class SettingsController extends Controller
             ->where('created_at', '>=', now()->subDays($days));
 
         if ($search !== '') {
-            $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $op = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
             $query->where(function ($q) use ($search, $op) {
                 $q->where('description', $op, "%{$search}%")
                     ->orWhere('log_name', $op, "%{$search}%")

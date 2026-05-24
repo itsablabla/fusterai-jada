@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class Customer extends Model implements AuthenticatableContract
 {
@@ -52,7 +53,7 @@ class Customer extends Model implements AuthenticatableContract
 
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $op = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $op = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
         return $query->where(function (Builder $q) use ($term, $op) {
             $q->where('name', $op, "%{$term}%")
