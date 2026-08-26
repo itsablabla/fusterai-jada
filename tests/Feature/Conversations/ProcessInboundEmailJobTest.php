@@ -38,7 +38,7 @@ function baseEmailData(array $overrides = []): array
             'auto_submitted' => '',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ], $overrides);
 }
@@ -62,7 +62,7 @@ test('email with Auto-Submitted auto-replied header is silently dropped', functi
             'auto_submitted' => 'auto-replied',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -77,7 +77,7 @@ test('email with Auto-Submitted auto-generated header is silently dropped', func
             'auto_submitted' => 'auto-generated',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -86,13 +86,13 @@ test('email with Auto-Submitted auto-generated header is silently dropped', func
     expect(Conversation::where('mailbox_id', $this->mailbox->id)->count())->toBe(0);
 });
 
-test('email with X-FusterAI-AutoReply header is silently dropped', function () {
+test('email with X-Garza-AutoReply header is silently dropped', function () {
     $data = baseEmailData([
         'headers' => [
             'auto_submitted' => '',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '1',
+            'x_garza_auto_reply' => '1',
         ],
     ]);
 
@@ -107,7 +107,7 @@ test('email with X-Auto-Response-Suppress header is silently dropped', function 
             'auto_submitted' => '',
             'x_auto_response_suppress' => 'All',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -122,7 +122,7 @@ test('email with Precedence bulk header is silently dropped', function () {
             'auto_submitted' => '',
             'x_auto_response_suppress' => '',
             'precedence' => 'bulk',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -137,7 +137,7 @@ test('email with Precedence junk header is silently dropped', function () {
             'auto_submitted' => '',
             'x_auto_response_suppress' => '',
             'precedence' => 'junk',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -169,7 +169,7 @@ test('email with Auto-Submitted no is treated as normal', function () {
             'auto_submitted' => 'no',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -184,7 +184,7 @@ test('dropped auto-reply does not dispatch SendAutoReplyJob', function () {
             'auto_submitted' => 'auto-replied',
             'x_auto_response_suppress' => '',
             'precedence' => '',
-            'x_fusterai_auto_reply' => '',
+            'x_garza_auto_reply' => '',
         ],
     ]);
 
@@ -284,7 +284,7 @@ test('reply email is appended to existing conversation via In-Reply-To', functio
 
     $data = baseEmailData([
         'from_email' => $this->customer->email,
-        'in_reply_to' => '<conversation-'.$conversation->id.'@fusterai>',
+        'in_reply_to' => '<conversation-'.$conversation->id.'@garza>',
     ]);
 
     (new ProcessInboundEmailJob($this->mailbox->id, $data))->handle();

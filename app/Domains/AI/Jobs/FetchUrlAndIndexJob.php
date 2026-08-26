@@ -36,7 +36,7 @@ class FetchUrlAndIndexJob implements ShouldQueue
 
             $response = Http::timeout(20)
                 ->withoutRedirecting()
-                ->withHeaders(['User-Agent' => 'FusterAI-KnowledgeBase/1.0'])
+                ->withHeaders(['User-Agent' => 'GarzaSupport-KnowledgeBase/1.0'])
                 ->get($this->url);
 
             // Follow up to 5 redirects, validating each destination for SSRF.
@@ -50,7 +50,7 @@ class FetchUrlAndIndexJob implements ShouldQueue
                 SsrfGuard::validate($location);
                 $response = Http::timeout(20)
                     ->withoutRedirecting()
-                    ->withHeaders(['User-Agent' => 'FusterAI-KnowledgeBase/1.0'])
+                    ->withHeaders(['User-Agent' => 'GarzaSupport-KnowledgeBase/1.0'])
                     ->get($location);
                 $redirects++;
             }

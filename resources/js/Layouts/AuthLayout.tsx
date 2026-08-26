@@ -16,7 +16,7 @@ const features = [
 
 export default function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     const { branding } = usePage<PageProps>().props;
-    const logoName = branding?.name || 'FusterAI';
+    const logoName = branding?.name || 'Garza Support';
 
     return (
         <>

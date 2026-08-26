@@ -9,7 +9,7 @@ test('check flag reports already up to date', function () {
         'api.github.com/repos/*/releases/latest' => Http::response(['tag_name' => $version], 200),
     ]);
 
-    $this->artisan('fusterai:update --check')
+    $this->artisan('garza:update --check')
         ->expectsOutputToContain('already on the latest version')
         ->assertExitCode(0);
 });
@@ -19,9 +19,9 @@ test('check flag reports new version available without applying', function () {
         'api.github.com/repos/*/releases/latest' => Http::response(['tag_name' => 'v9.9.9'], 200),
     ]);
 
-    $this->artisan('fusterai:update --check')
+    $this->artisan('garza:update --check')
         ->expectsOutputToContain('v9.9.9')
-        ->expectsOutputToContain('php artisan fusterai:update')
+        ->expectsOutputToContain('php artisan garza:update')
         ->assertExitCode(0);
 });
 
@@ -30,7 +30,7 @@ test('exits with failure when github is unreachable', function () {
         'api.github.com/*' => Http::response(null, 500),
     ]);
 
-    $this->artisan('fusterai:update --check')
+    $this->artisan('garza:update --check')
         ->expectsOutputToContain('Could not reach GitHub')
         ->assertExitCode(1);
 });

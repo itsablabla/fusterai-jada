@@ -1,4 +1,4 @@
-# FusterAI — AI-First Customer Support Platform
+# Garza Support — AI-First Customer Support Platform
 
 > Self-hosted, open-source helpdesk built for 2026. AI reply suggestions, RAG knowledge base, live chat, automation rules, MCP server — all on your own infrastructure.
 
@@ -37,11 +37,11 @@
 
 ## Overview
 
-**FusterAI** is a fully self-hosted, open-source customer support platform built AI-first. Every conversation benefits from automatic reply suggestions, smart categorization, summarization, and semantic knowledge base search — all running on your own infrastructure, with no per-seat SaaS pricing.
+**Garza Support** is a fully self-hosted, open-source customer support platform built AI-first. Every conversation benefits from automatic reply suggestions, smart categorization, summarization, and semantic knowledge base search — all running on your own infrastructure, with no per-seat SaaS pricing.
 
-**Why FusterAI instead of Zendesk, Freshdesk, or other open-source tools?**
+**Why Garza Support instead of Zendesk, Freshdesk, or other open-source tools?**
 
-| | FusterAI | FreeScout / osTicket | Chatwoot | Zendesk / Freshdesk |
+| | Garza Support | FreeScout / osTicket | Chatwoot | Zendesk / Freshdesk |
 |---|---|---|---|---|
 | Self-hosted | ✅ | ✅ | ✅ | ❌ SaaS only |
 | Your data stays on your servers | ✅ | ✅ | ✅ | ❌ |
@@ -63,10 +63,10 @@
 
 ## Privacy & Data Sovereignty
 
-FusterAI is built for teams where data control is non-negotiable.
+Garza Support is built for teams where data control is non-negotiable.
 
 **Your data never leaves your infrastructure.**
-Customer emails, support threads, attachments, AI-generated summaries, knowledge base documents — everything is stored in your own PostgreSQL database and file storage. FusterAI makes no outbound calls to any third party except the AI API you explicitly configure.
+Customer emails, support threads, attachments, AI-generated summaries, knowledge base documents — everything is stored in your own PostgreSQL database and file storage. Garza Support makes no outbound calls to any third party except the AI API you explicitly configure.
 
 **GDPR compliance by design:**
 - No vendor data processing agreement (DPA) required for the platform itself — you own and control the data store
@@ -170,9 +170,9 @@ Choose the setup path that suits you:
 
 Click **Code → Codespaces → Create codespace** on the GitHub repo page.
 
-Codespaces builds the full stack (PHP 8.4, PostgreSQL, Redis, MeiliSearch) and runs the setup wizard automatically. When the terminal shows **✓ FusterAI is ready!**, open the forwarded port `8000` in your browser.
+Codespaces builds the full stack (PHP 8.4, PostgreSQL, Redis, MeiliSearch) and runs the setup wizard automatically. When the terminal shows **✓ Garza Support is ready!**, open the forwarded port `8000` in your browser.
 
-**Demo login:** `admin@fusterai.com` / `password`
+**Demo login:** `admin@garzasupport.com` / `password`
 
 > To use AI features, add `ANTHROPIC_API_KEY` in the Codespace's **Secrets** settings before creating the codespace.
 
@@ -184,8 +184,8 @@ Codespaces builds the full stack (PHP 8.4, PostgreSQL, Redis, MeiliSearch) and r
 
 ```bash
 # 1. Clone
-git clone https://github.com/aiandautomations/fusterai.git
-cd fusterai
+git clone https://github.com/garzasupport/garza-support.git
+cd garza-support
 
 # 2. Install PHP dependencies (throwaway container — no local PHP needed)
 docker run --rm -u "$(id -u):$(id -g)" \
@@ -210,19 +210,19 @@ Sail starts PostgreSQL 17 (with pgvector), Redis, MeiliSearch, and Mailpit, then
 
 ```bash
 # Interactive — creates your workspace and admin account
-./vendor/bin/sail artisan fusterai:install
+./vendor/bin/sail artisan garza:install
 
 # Or load demo data instead (4 agents, 16 customers, 33 conversations)
-./vendor/bin/sail artisan fusterai:install --demo
+./vendor/bin/sail artisan garza:install --demo
 ```
 
-**Demo login:** `admin@fusterai.com` / `password`
+**Demo login:** `admin@garzasupport.com` / `password`
 
 **6. Open the app:**
 
 | Service | URL |
 |---|---|
-| **FusterAI** | http://localhost:8000 |
+| **Garza Support** | http://localhost:8000 |
 | **Horizon** (queue monitor) | http://localhost:8000/horizon |
 | **API Docs** | http://localhost:8000/docs/api |
 | **Mailpit** (dev email) | http://localhost:8025 |
@@ -251,8 +251,8 @@ sail build --no-cache && sail up -d   # Rebuild after Dockerfile changes
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/aiandautomations/fusterai.git
-cd fusterai
+git clone https://github.com/garzasupport/garza-support.git
+cd garza-support
 composer install && npm install
 
 # 2. Environment
@@ -260,17 +260,17 @@ cp .env.example .env
 php artisan key:generate
 
 # 3. Database
-psql -U postgres -c "CREATE DATABASE fusterai;"
-psql -U postgres -d fusterai -c "CREATE EXTENSION vector;"
+psql -U postgres -c "CREATE DATABASE garza;"
+psql -U postgres -d garza -c "CREATE EXTENSION vector;"
 
 # 4. Run the setup wizard (handles migrations, OAuth keys, storage, and first user)
-php artisan fusterai:install
+php artisan garza:install
 
 # 5. Build frontend
 npm run build
 ```
 
-> `fusterai:install` handles migrations, OAuth key generation, storage symlink, and creates your admin account. After it completes, you must set up at least one mailbox (Settings → Mailboxes) before the app is usable.
+> `garza:install` handles migrations, OAuth key generation, storage symlink, and creates your admin account. After it completes, you must set up at least one mailbox (Settings → Mailboxes) before the app is usable.
 
 **Start development services:**
 
@@ -297,13 +297,13 @@ APP_KEY=base64:...            # php artisan key:generate
 APP_URL=http://localhost
 
 DB_HOST=127.0.0.1
-DB_DATABASE=fusterai
+DB_DATABASE=garza
 DB_USERNAME=postgres
 DB_PASSWORD=secret
 
 REDIS_HOST=127.0.0.1
 
-REVERB_APP_ID=fusterai
+REVERB_APP_ID=garza
 REVERB_APP_KEY=your-key
 REVERB_APP_SECRET=your-secret
 ```
@@ -350,7 +350,7 @@ FILESYSTEM_DISK=s3
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=fusterai-files
+AWS_BUCKET=garza-files
 
 # Works with MinIO, Backblaze B2, Cloudflare R2, etc.
 AWS_ENDPOINT=https://your-endpoint
@@ -415,7 +415,7 @@ activity_logs       — Full audit trail
 
 ### MCP Server
 
-FusterAI exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents can interact with your helpdesk directly.
+Garza Support exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents can interact with your helpdesk directly.
 
 **Available tools:**
 
@@ -432,7 +432,7 @@ FusterAI exposes a [Model Context Protocol](https://modelcontextprotocol.io) ser
 ```json
 {
   "mcpServers": {
-    "fusterai": {
+    "garza": {
       "url": "http://localhost:8000/mcp",
       "headers": { "Authorization": "Bearer your-personal-access-token" }
     }
@@ -458,15 +458,15 @@ Embed on any website with two lines of HTML:
 
 ```html
 <script>
-  window.FusterAIChat = {
+  window.GarzaSupportChat = {
     workspaceId: 1,
     wsKey:       'your-reverb-app-key',
-    wsHost:      'your-fusterai.com',
+    wsHost:      'your-garzasupport.com',
     wsPort:      8080,
-    apiBase:     'https://your-fusterai.com'
+    apiBase:     'https://your-garzasupport.com'
   };
 </script>
-<script src="https://your-fusterai.com/livechat/widget.js" async></script>
+<script src="https://your-garzasupport.com/livechat/widget.js" async></script>
 ```
 
 ### WhatsApp
@@ -474,7 +474,7 @@ Embed on any website with two lines of HTML:
 Connect a WhatsApp Business account via the Meta Cloud API:
 
 1. Create a Meta Business App and enable WhatsApp
-2. In FusterAI, create a mailbox with channel type **WhatsApp**
+2. In Garza Support, create a mailbox with channel type **WhatsApp**
 3. Save your `Phone Number ID`, `Access Token`, and `App Secret` in the mailbox settings
 4. Register the webhook URL shown in settings with Meta (verify token = mailbox webhook token)
 
@@ -500,7 +500,7 @@ Accept messages from any platform (Twilio, Stripe, custom systems) via `POST /ap
 
 ## Module System
 
-Extend FusterAI without touching core code. Drop a module in `Modules/` and it auto-loads.
+Extend Garza Support without touching core code. Drop a module in `Modules/` and it auto-loads.
 
 ```
 Modules/MyModule/
@@ -660,7 +660,7 @@ Edit `config/horizon.php` to tune workers per environment:
 ### One-command update (recommended)
 
 ```bash
-php artisan fusterai:update
+php artisan garza:update
 ```
 
 This command checks GitHub for a new release, confirms with you, then safely:
@@ -674,8 +674,8 @@ This command checks GitHub for a new release, confirms with you, then safely:
 7. Gracefully restarts Horizon (or queue workers if Horizon isn't installed)
 
 ```bash
-php artisan fusterai:update --check   # Check for updates without applying
-php artisan fusterai:update --force   # Non-interactive (CI/CD, scripts)
+php artisan garza:update --check   # Check for updates without applying
+php artisan garza:update --force   # Non-interactive (CI/CD, scripts)
 ```
 
 > **Your `.env` and database are never modified** by this command. Only code is updated.
@@ -711,10 +711,10 @@ php artisan reverb:start
 
 ### Breaking changes
 
-Check the [commit log](https://github.com/aiandautomations/fusterai/commits/main) before upgrading in production. Commits prefixed `BREAKING:` or touching `database/migrations/` require extra care — always back up your database first:
+Check the [commit log](https://github.com/garzasupport/garza-support/commits/main) before upgrading in production. Commits prefixed `BREAKING:` or touching `database/migrations/` require extra care — always back up your database first:
 
 ```bash
-pg_dump fusterai > fusterai_backup_$(date +%Y%m%d).sql
+pg_dump garza > garza_backup_$(date +%Y%m%d).sql
 ```
 
 ---
@@ -759,7 +759,7 @@ Detailed guides in the [`docs/`](docs/) folder:
 
 ### File uploads not working / attachments broken
 - Run `php artisan storage:link` to create the public storage symlink.
-- `fusterai:install` does this automatically; `composer setup` now does too.
+- `garza:install` does this automatically; `composer setup` now does too.
 
 ### App works but inbox stays empty
 - Set up a mailbox: **Settings → Mailboxes → New Mailbox** with your IMAP credentials.
@@ -806,16 +806,16 @@ chore:    maintenance (deps, config, CI)
 
 ## License
 
-FusterAI is open-source software licensed under the **[MIT License](LICENSE)**.
+Garza Support is open-source software licensed under the **[MIT License](LICENSE)**.
 
 ---
 
 ## Acknowledgements
 
-FusterAI is built on the shoulders of giants:
+Garza Support is built on the shoulders of giants:
 
 [Laravel](https://laravel.com) · [Inertia.js](https://inertiajs.com) · [React](https://react.dev) · [shadcn/ui](https://ui.shadcn.com) · [Tiptap](https://tiptap.dev) · [Spatie](https://spatie.be) · [MeiliSearch](https://meilisearch.com) · [pgvector](https://github.com/pgvector/pgvector) · [Laravel Horizon](https://laravel.com/docs/horizon) · [Laravel Reverb](https://laravel.com/docs/reverb) · [Anthropic](https://anthropic.com)
 
 ---
 
-<p align="center">Star ⭐ the repo if FusterAI helps your team.</p>
+<p align="center">Star ⭐ the repo if Garza Support helps your team.</p>

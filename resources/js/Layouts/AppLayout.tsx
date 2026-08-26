@@ -267,7 +267,7 @@ export default function AppLayout({ children, fullHeight, onCreateView }: AppLay
                                     </div>
                                 )}
                                 <span className="font-bold text-[15px] leading-none tracking-tight truncate">
-                                    {branding?.name || 'FusterAI'}
+                                    {branding?.name || 'Garza Support'}
                                 </span>
                             </Link>
                         )}

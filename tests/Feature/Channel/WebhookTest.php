@@ -153,7 +153,7 @@ test('duplicate inbound email with same message_id creates only one conversation
         'references' => null,
         'attachments' => [],
         'cc' => [],
-        'headers' => ['auto_submitted' => '', 'x_auto_response_suppress' => '', 'precedence' => '', 'x_fusterai_auto_reply' => ''],
+        'headers' => ['auto_submitted' => '', 'x_auto_response_suppress' => '', 'precedence' => '', 'x_garza_auto_reply' => ''],
     ];
 
     (new ProcessInboundEmailJob($this->mailbox->id, $emailData))->handle();

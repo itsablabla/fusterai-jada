@@ -1,20 +1,20 @@
 # Getting Started
 
-This guide walks you through your first steps after installing FusterAI — setting up a mailbox, connecting email, and handling your first conversation.
+This guide walks you through your first steps after installing Garza Support — setting up a mailbox, connecting email, and handling your first conversation.
 
-> **Prerequisite:** FusterAI is installed and running. See the [Installation Guide](installation.md) if you haven't set it up yet.
+> **Prerequisite:** Garza Support is installed and running. See the [Installation Guide](installation.md) if you haven't set it up yet.
 
 ---
 
 ## 1. Log In
 
-Visit your FusterAI instance (default: http://localhost:8000) and log in with the admin credentials you created during installation.
+Visit your Garza Support instance (default: http://localhost:8000) and log in with the admin credentials you created during installation.
 
 ---
 
 ## 2. Explore the Interface
 
-FusterAI uses a three-panel layout:
+Garza Support uses a three-panel layout:
 
 ```
 ┌──────────────┬───────────────────────┬──────────────────────────────────┐
@@ -42,7 +42,7 @@ FusterAI uses a three-panel layout:
 
 ## 3. Configure Your First Mailbox
 
-A **mailbox** connects an email address to FusterAI so you can receive and send emails.
+A **mailbox** connects an email address to Garza Support so you can receive and send emails.
 
 1. Go to **Settings → Mailboxes → Add Mailbox**
 2. Fill in the mailbox name and email address
@@ -60,7 +60,7 @@ A **mailbox** connects an email address to FusterAI so you can receive and send 
 
 ### Test the mailbox
 
-FusterAI fetches new emails every minute via the scheduler. To trigger an immediate fetch:
+Garza Support fetches new emails every minute via the scheduler. To trigger an immediate fetch:
 
 ```bash
 # Sail
@@ -70,7 +70,7 @@ sail artisan fetch:emails
 php artisan fetch:emails
 ```
 
-Send a test email to your mailbox address and it should appear in FusterAI within a minute.
+Send a test email to your mailbox address and it should appear in Garza Support within a minute.
 
 ---
 
@@ -94,7 +94,7 @@ Tags help categorize conversations for filtering and reporting.
 1. Go to **Settings → Tags → Add Tag**
 2. Give it a name and choose a color
 3. Tags can be manually applied to conversations from the conversation sidebar
-4. With AI enabled, FusterAI will auto-apply tags based on conversation content
+4. With AI enabled, Garza Support will auto-apply tags based on conversation content
 
 ---
 
@@ -153,7 +153,7 @@ The AI uses your knowledge base as context when generating replies (RAG):
 
 1. Go to **Knowledge Base → New Knowledge Base**
 2. Add documents (FAQs, product guides, policies)
-3. FusterAI will index them automatically using pgvector embeddings
+3. Garza Support will index them automatically using pgvector embeddings
 4. From this point, AI replies will reference your documentation
 
 ---
@@ -184,12 +184,12 @@ Embed a real-time chat widget on your website:
 
 ```html
 <script>
-  window.FusterAIConfig = {
+  window.GarzaSupportChat = {
     workspaceId: 'your-workspace-id',
-    serverUrl: 'https://your-fusterai.com'
+    serverUrl: 'https://your-garzasupport.com'
   };
 </script>
-<script src="https://your-fusterai.com/livechat/widget.js" async></script>
+<script src="https://your-garzasupport.com/livechat/widget.js" async></script>
 ```
 
 Chat messages appear in the **Live Chat** section of the sidebar in real-time.
@@ -198,7 +198,7 @@ Chat messages appear in the **Live Chat** section of the sidebar in real-time.
 
 ## 10. Use the REST API
 
-Create an API token to integrate FusterAI with other tools:
+Create an API token to integrate Garza Support with other tools:
 
 1. Go to **Settings → API Tokens → Create Token**
 2. Copy the token (shown only once)
@@ -230,4 +230,4 @@ Full API documentation is available at http://localhost:8000/docs/api.
 
 - [Configuration Reference](configuration.md) — all environment variables explained
 - [AI Setup Guide](ai-setup.md) — detailed AI configuration and RAG setup
-- [Module Development](modules.md) — extend FusterAI with custom modules
+- [Module Development](modules.md) — extend Garza Support with custom modules

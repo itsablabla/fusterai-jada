@@ -94,7 +94,7 @@ class SendReplyJob implements ShouldQueue
 
         // Generate a stable per-thread message ID for bounce tracking.
         // Stored without angle brackets; Symfony IdentificationHeader adds them when serialising.
-        $outboundMsgId = 'thread-'.$thread->id.'-'.Str::uuid().'@fusterai';
+        $outboundMsgId = 'thread-'.$thread->id.'-'.Str::uuid().'@garza';
 
         $trackingToken = Str::random(32);
         $unsubscribeUrl = URL::signedRoute('unsubscribe', ['customer' => $customer->id]);
@@ -125,7 +125,7 @@ class SendReplyJob implements ShouldQueue
             $msg->getHeaders()->addIdHeader('Message-ID', $outboundMsgId);
             $msg->getHeaders()->addTextHeader('In-Reply-To', $msgId);
             $msg->getHeaders()->addTextHeader('References', $msgId);
-            $msg->getHeaders()->addTextHeader('X-FusterAI-Conversation', (string) $conversation->id);
+            $msg->getHeaders()->addTextHeader('X-Garza-Conversation', (string) $conversation->id);
             $msg->getHeaders()->addTextHeader('List-Unsubscribe', "<{$unsubscribeUrl}>, <mailto:{$mailbox->email}?subject=Unsubscribe>");
             $msg->getHeaders()->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
 
@@ -182,7 +182,7 @@ class SendReplyJob implements ShouldQueue
 
     private function conversationMessageId(Conversation $conversation): string
     {
-        return '<conversation-'.$conversation->id.'@fusterai>';
+        return '<conversation-'.$conversation->id.'@garza>';
     }
 
     /**

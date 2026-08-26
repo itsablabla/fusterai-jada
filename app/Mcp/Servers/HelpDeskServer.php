@@ -12,7 +12,7 @@ use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 
-#[Name('FusterAI HelpDesk')]
+#[Name('Garza Support HelpDesk')]
 #[Version('1.0.0')]
 #[Instructions('Tools for querying and managing HelpDesk conversations, customers, and notes.')]
 class HelpDeskServer extends Server

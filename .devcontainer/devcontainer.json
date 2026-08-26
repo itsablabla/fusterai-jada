@@ -1,5 +1,5 @@
 {
-  "name": "FusterAI",
+  "name": "Garza Support",
 
   // Reuse the same docker-compose stack used for local development.
   "dockerComposeFile": ["../docker-compose.yml"],
@@ -13,7 +13,7 @@
   "forwardPorts": [8000, 8025, 7700, 8080],
   "portsAttributes": {
     "8000": {
-      "label": "FusterAI App",
+      "label": "Garza Support App",
       "onAutoForward": "openBrowserOnce"
     },
     "8025": {
@@ -32,5 +32,5 @@
 
   // After the container stack is up, seed demo data so the app is immediately usable.
   // The entrypoint already runs migrations, npm install, and npm build before supervisord starts.
-  "postCreateCommand": "until php artisan db:show > /dev/null 2>&1; do sleep 2; done && php artisan fusterai:install --demo --force"
+  "postCreateCommand": "until php artisan db:show > /dev/null 2>&1; do sleep 2; done && php artisan garza:install --demo --force"
 }

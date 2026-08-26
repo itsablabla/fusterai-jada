@@ -156,8 +156,9 @@ class ProcessInboundEmailJob implements ShouldQueue
         // Try to match by In-Reply-To or References to an existing conversation
         if (! empty($data['in_reply_to']) || ! empty($data['references'])) {
             $ref = $data['in_reply_to'] ?: $data['references'];
-            // Extract conversation ID from our message-id format: <conversation-123@fusterai>
-            if (preg_match('/conversation-(\d+)@fusterai/', $ref, $m)) {
+            // Extract conversation ID from our message-id format: <conversation-123@garza>
+            // (also matches the legacy @fusterai domain for pre-rebrand threads)
+            if (preg_match('/conversation-(\d+)@(?:garza|fusterai)/', $ref, $m)) {
                 $existing = Conversation::where('mailbox_id', $mailbox->id)
                     ->find((int) $m[1]);
                 if ($existing) {
@@ -206,8 +207,8 @@ class ProcessInboundEmailJob implements ShouldQueue
     {
         $headers = $data['headers'] ?? [];
 
-        // Our own auto-reply header
-        if (! empty($headers['x_fusterai_auto_reply'])) {
+        // Our own auto-reply header (including the legacy pre-rebrand key from older queued jobs)
+        if (! empty($headers['x_garza_auto_reply']) || ! empty($headers['x_fusterai_auto_reply'])) {
             return true;
         }
 

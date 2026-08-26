@@ -26,7 +26,7 @@ const moduleSlots: Record<string, { slot: string; component: React.LazyExoticCom
     ],
 };
 
-const appName = document.querySelector('meta[name="app-name"]')?.getAttribute('content') ?? 'FusterAI';
+const appName = document.querySelector('meta[name="app-name"]')?.getAttribute('content') ?? 'Garza Support';
 
 createInertiaApp({
     title: (title) => `${title} — ${appName}`,

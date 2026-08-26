@@ -31,6 +31,6 @@ class DailyDigestNotification extends Notification implements ShouldQueue
             ->line("📬 **Open conversations:** {$this->stats['open']}")
             ->line("⏳ **Pending:** {$this->stats['pending']}")
             ->line("👤 **Assigned to you:** {$this->stats['assigned_to_me']}")
-            ->action('Open FusterAI', url('/conversations'));
+            ->action('Open Garza Support', url('/conversations'));
     }
 }

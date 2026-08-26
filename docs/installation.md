@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers both Laravel Sail (recommended) and manual installation of FusterAI.
+This guide covers both Laravel Sail (recommended) and manual installation of Garza Support.
 
 ---
 
@@ -22,13 +22,13 @@ This guide covers both Laravel Sail (recommended) and manual installation of Fus
 
 ## Option 1 — Laravel Sail (Recommended)
 
-Laravel Sail is FusterAI's Docker-based development environment. All dependencies are containerized and the official `laravelsail/php84-composer` image has every required PHP extension pre-installed — no compilation needed.
+Laravel Sail is Garza Support's Docker-based development environment. All dependencies are containerized and the official `laravelsail/php84-composer` image has every required PHP extension pre-installed — no compilation needed.
 
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/your-org/fusterai.git
-cd fusterai
+git clone https://github.com/your-org/garza-support.git
+cd garza-support
 ```
 
 ### Step 2 — Install PHP dependencies
@@ -98,7 +98,7 @@ Open these in your browser:
 
 | Service | URL | What it is |
 |---|---|---|
-| **FusterAI App** | http://localhost:8000 | Main helpdesk UI — start here |
+| **Garza Support App** | http://localhost:8000 | Main helpdesk UI — start here |
 | **Horizon** | http://localhost:8000/horizon | Queue monitor — check job processing |
 | **API Docs** | http://localhost:8000/docs/api | Auto-generated OpenAPI documentation |
 | **Mailpit** | http://localhost:8025 | Catches all outbound emails in dev |
@@ -146,7 +146,7 @@ Visit http://localhost:8000 and log in with the credentials you just created.
 
 ## Option 2 — Manual Installation
 
-Use this if you want to run FusterAI on a server where you manage PHP, PostgreSQL, and Redis yourself.
+Use this if you want to run Garza Support on a server where you manage PHP, PostgreSQL, and Redis yourself.
 
 ### Step 1 — Install system dependencies
 
@@ -192,9 +192,9 @@ sudo mv composer.phar /usr/local/bin/composer
 sudo -u postgres psql
 
 # Inside psql:
-CREATE USER fusterai WITH PASSWORD 'your-secure-password';
-CREATE DATABASE fusterai OWNER fusterai;
-\c fusterai
+CREATE USER garza WITH PASSWORD 'your-secure-password';
+CREATE DATABASE garza OWNER garza;
+\c garza
 CREATE EXTENSION vector;
 \q
 ```
@@ -202,8 +202,8 @@ CREATE EXTENSION vector;
 ### Step 3 — Clone and install dependencies
 
 ```bash
-git clone https://github.com/your-org/fusterai.git
-cd fusterai
+git clone https://github.com/your-org/garza-support.git
+cd garza-support
 
 # Install PHP dependencies
 composer install
@@ -223,8 +223,8 @@ Edit `.env` with your database and Redis credentials:
 
 ```env
 DB_HOST=127.0.0.1
-DB_DATABASE=fusterai
-DB_USERNAME=fusterai
+DB_DATABASE=garza
+DB_USERNAME=garza
 DB_PASSWORD=your-secure-password
 
 REDIS_HOST=127.0.0.1
@@ -233,10 +233,12 @@ REDIS_HOST=127.0.0.1
 Set Reverb WebSocket keys (generate random strings):
 
 ```env
-REVERB_APP_ID=fusterai
+REVERB_APP_ID=garza
 REVERB_APP_KEY=your-random-key
 REVERB_APP_SECRET=your-random-secret
 ```
+
+> **Upgrading from FusterAI?** The default database name and user changed from `fusterai` to `garza`, but these are defaults only — existing deployments can keep their current `DB_DATABASE`/`DB_USERNAME` values in `.env` without any migration. The legacy `php artisan fusterai:install` and `fusterai:update` commands still work as aliases for `garza:install` and `garza:update`.
 
 ### Step 5 — Migrate and build
 
@@ -305,7 +307,7 @@ User::create([
 
 ## MeiliSearch Setup (Optional)
 
-MeiliSearch provides fast full-text search. Without it, FusterAI falls back to basic database search.
+MeiliSearch provides fast full-text search. Without it, Garza Support falls back to basic database search.
 
 ### Sail
 MeiliSearch is already included in `docker-compose.yml`. Set `SCOUT_DRIVER=meilisearch` in your `.env`.
@@ -360,10 +362,10 @@ The pgvector extension must be enabled before migrating:
 
 ```bash
 # Sail
-sail exec pgsql psql -U fusterai -d fusterai -c "CREATE EXTENSION IF NOT EXISTS vector;"
+sail exec pgsql psql -U garza -d garza -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
 # Manual
-psql -U fusterai -d fusterai -c "CREATE EXTENSION IF NOT EXISTS vector;"
+psql -U garza -d garza -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
 ### WebSocket connection fails

@@ -68,8 +68,8 @@ class SendAutoReplyJob implements ShouldQueue
                 ->subject($subject)
                 ->text($body);
 
-            $msg->getHeaders()->addIdHeader('Message-ID', 'conversation-'.$conversation->id.'@fusterai');
-            $msg->getHeaders()->addTextHeader('X-FusterAI-AutoReply', '1');
+            $msg->getHeaders()->addIdHeader('Message-ID', 'conversation-'.$conversation->id.'@garza');
+            $msg->getHeaders()->addTextHeader('X-Garza-AutoReply', '1');
             $msg->getHeaders()->addTextHeader('List-Unsubscribe', "<{$unsubscribeUrl}>, <mailto:{$mailbox->email}?subject=Unsubscribe>");
             $msg->getHeaders()->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
         });

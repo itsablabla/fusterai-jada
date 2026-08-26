@@ -10,20 +10,23 @@ use Illuminate\Support\Str;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'fusterai:install
+    protected $signature = 'garza:install
                             {--demo : Seed demo data and skip interactive prompts}
                             {--force : Re-run even if a workspace already exists}';
 
-    protected $description = 'Run the FusterAI installation wizard';
+    /** @var array<int, string> Backward-compatible alias for the pre-rebrand command name. */
+    protected $aliases = ['fusterai:install'];
+
+    protected $description = 'Run the Garza Support installation wizard';
 
     public function handle(): int
     {
         $this->newLine();
-        $this->line('  <fg=blue;options=bold> FusterAI </>  AI-First Customer Support Platform');
+        $this->line('  <fg=blue;options=bold> Garza Support </>  AI-First Customer Support Platform');
         $this->newLine();
 
         if (Workspace::exists() && ! $this->option('force') && ! $this->option('demo')) {
-            $this->warn('  FusterAI is already installed.');
+            $this->warn('  Garza Support is already installed.');
             if (! $this->confirm('  Run setup again?', false)) {
                 return self::SUCCESS;
             }
@@ -47,7 +50,7 @@ class InstallCommand extends Command
         if ($this->option('demo')) {
             $this->line('  <fg=yellow>→</> Seeding demo data...');
             $this->callSilently('db:seed');
-            $this->printSuccess('admin@fusterai.com', 'password');
+            $this->printSuccess('admin@garzasupport.com', 'password');
 
             return self::SUCCESS;
         }
@@ -103,7 +106,7 @@ class InstallCommand extends Command
         $url = config('app.url');
 
         $this->newLine();
-        $this->line('  <fg=green;options=bold>✓ FusterAI is ready!</>');
+        $this->line('  <fg=green;options=bold>✓ Garza Support is ready!</>');
         $this->newLine();
         $this->line("  <fg=white>URL:</>      <fg=cyan>{$url}</>");
         $this->line("  <fg=white>Email:</>    <fg=cyan>{$email}</>");

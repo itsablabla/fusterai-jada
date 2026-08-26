@@ -88,7 +88,7 @@ test('SendReplyJob stores outbound_message_id in thread meta', function () {
 
     // Stored with angle brackets so it matches what mail servers return in bounce notifications
     expect($thread->fresh()->meta['outbound_message_id'])->toStartWith('<thread-')
-        ->and($thread->fresh()->meta['outbound_message_id'])->toEndWith('@fusterai>');
+        ->and($thread->fresh()->meta['outbound_message_id'])->toEndWith('@garza>');
 });
 
 // ── Soft bounce retry ─────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ test('ProcessBounceJob retries send for soft bounce when outbound thread found',
         'customer_id' => $this->customer->id,
     ]);
 
-    $outboundMsgId = '<thread-42-abc@fusterai>';
+    $outboundMsgId = '<thread-42-abc@garza>';
 
     $thread = Thread::factory()->create([
         'conversation_id' => $conversation->id,
@@ -130,7 +130,7 @@ test('ProcessBounceJob does NOT retry for hard bounce', function () {
         'customer_id' => $this->customer->id,
     ]);
 
-    $outboundMsgId = '<thread-99-def@fusterai>';
+    $outboundMsgId = '<thread-99-def@garza>';
 
     Thread::factory()->create([
         'conversation_id' => $conversation->id,
@@ -160,7 +160,7 @@ test('ProcessBounceJob hard bounce moves conversation to pending', function () {
         'status' => 'open',
     ]);
 
-    $outboundMsgId = '<thread-77-ghi@fusterai>';
+    $outboundMsgId = '<thread-77-ghi@garza>';
 
     Thread::factory()->create([
         'conversation_id' => $conversation->id,
@@ -188,7 +188,7 @@ test('ProcessBounceJob logs activity thread on any bounce', function () {
         'customer_id' => $this->customer->id,
     ]);
 
-    $outboundMsgId = '<thread-55-jkl@fusterai>';
+    $outboundMsgId = '<thread-55-jkl@garza>';
 
     Thread::factory()->create([
         'conversation_id' => $conversation->id,
@@ -222,7 +222,7 @@ test('ProcessBounceJob is a no-op when no matching conversation exists', functio
         toEmail: 'nobody@example.com',
         bounceType: 'hard',
         bounceMessage: 'Unknown',
-        originalMessageId: '<does-not-exist@fusterai>',
+        originalMessageId: '<does-not-exist@garza>',
     ))->handle();
 
     Queue::assertNotPushed(SendReplyJob::class);

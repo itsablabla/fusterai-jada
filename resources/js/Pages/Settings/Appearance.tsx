@@ -63,7 +63,15 @@ const PRESETS: {
     radius: AppearanceRadius;
     contrast: AppearanceContrast;
 }[] = [
-    { name: 'FusterAI Default', isDefault: true, mode: 'system', color: 'violet', font: 'figtree', radius: 'sm', contrast: 'balanced' },
+    {
+        name: 'Garza Support Default',
+        isDefault: true,
+        mode: 'system',
+        color: 'violet',
+        font: 'figtree',
+        radius: 'sm',
+        contrast: 'balanced',
+    },
     { name: 'Modern Indigo', mode: 'system', color: 'indigo', font: 'figtree', radius: 'lg', contrast: 'balanced' },
     { name: 'Soft Neutral', mode: 'light', color: 'neutral', font: 'inter', radius: 'xl', contrast: 'soft' },
     { name: 'Night Emerald', mode: 'dark', color: 'emerald', font: 'manrope', radius: 'md', contrast: 'strong' },

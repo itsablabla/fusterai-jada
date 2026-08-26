@@ -1,6 +1,6 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
-    "name": "fusterai",
+    "name": "garza-support",
     "version": "1.0.0",
     "private": true,
     "type": "module",

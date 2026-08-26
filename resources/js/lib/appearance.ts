@@ -31,12 +31,32 @@ export interface AppearanceSettings {
 }
 
 const STORAGE_KEYS = {
+    mode: 'garza-theme-mode',
+    color: 'garza-theme-color',
+    font: 'garza-theme-font',
+    radius: 'garza-theme-radius',
+    contrast: 'garza-theme-contrast',
+} as const;
+
+// Legacy pre-rebrand localStorage keys, migrated on first read so users keep their theme.
+const LEGACY_STORAGE_KEYS = {
     mode: 'fusterai-theme-mode',
     color: 'fusterai-theme-color',
     font: 'fusterai-theme-font',
     radius: 'fusterai-theme-radius',
     contrast: 'fusterai-theme-contrast',
 } as const;
+
+function migrateLegacyStorageKeys() {
+    (Object.keys(STORAGE_KEYS) as Array<keyof typeof STORAGE_KEYS>).forEach((key) => {
+        if (window.localStorage.getItem(STORAGE_KEYS[key]) === null) {
+            const legacyValue = window.localStorage.getItem(LEGACY_STORAGE_KEYS[key]);
+            if (legacyValue !== null) {
+                window.localStorage.setItem(STORAGE_KEYS[key], legacyValue);
+            }
+        }
+    });
+}
 
 export function withAppearanceDefaults(input?: Partial<AppearanceSettings> | null): AppearanceSettings {
     return {
@@ -50,6 +70,8 @@ export function withAppearanceDefaults(input?: Partial<AppearanceSettings> | nul
 
 export function readStoredAppearance(fallback?: Partial<AppearanceSettings> | null): AppearanceSettings {
     const defaults = withAppearanceDefaults(fallback);
+
+    migrateLegacyStorageKeys();
 
     const mode = window.localStorage.getItem(STORAGE_KEYS.mode) as AppearanceMode | null;
     const color = window.localStorage.getItem(STORAGE_KEYS.color) as AppearanceColor | null;

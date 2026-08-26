@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'FusterAI'),
+    'name' => env('APP_NAME', 'Garza Support'),
 
     'version' => '1.0.0',
 

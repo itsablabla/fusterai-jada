@@ -8,18 +8,21 @@ use Laravel\Horizon\Horizon;
 
 class UpdateCommand extends Command
 {
-    protected $signature = 'fusterai:update
+    protected $signature = 'garza:update
                             {--check : Only check for updates, do not apply}
                             {--force : Skip confirmation prompt}';
 
-    protected $description = 'Update FusterAI to the latest release';
+    /** @var array<int, string> Backward-compatible alias for the pre-rebrand command name. */
+    protected $aliases = ['fusterai:update'];
 
-    private const GITHUB_REPO = 'aiandautomations/fusterai';
+    protected $description = 'Update Garza Support to the latest release';
+
+    private const GITHUB_REPO = 'garzasupport/garza-support';
 
     public function handle(): int
     {
         $this->newLine();
-        $this->line('  <fg=blue;options=bold> FusterAI </>  Updater');
+        $this->line('  <fg=blue;options=bold> Garza Support </>  Updater');
         $this->newLine();
 
         $current = $this->currentVersion();
@@ -46,7 +49,7 @@ class UpdateCommand extends Command
         $this->newLine();
 
         if ($this->option('check')) {
-            $this->line('  Run <fg=cyan>php artisan fusterai:update</> to apply the update.');
+            $this->line('  Run <fg=cyan>php artisan garza:update</> to apply the update.');
             $this->newLine();
 
             return self::SUCCESS;
@@ -90,7 +93,7 @@ class UpdateCommand extends Command
 
         if ($this->hasUncommittedChanges()) {
             $this->line('  <fg=yellow>→</> Stashing local changes...');
-            exec('git stash push -m "fusterai:update auto-stash" 2>&1', $out, $code);
+            exec('git stash push -m "garza:update auto-stash" 2>&1', $out, $code);
             if ($code !== 0) {
                 $this->error('  Failed to stash changes: '.implode("\n", $out));
 
@@ -156,7 +159,7 @@ class UpdateCommand extends Command
         // ── Done ──────────────────────────────────────────────────────────────────
 
         $this->newLine();
-        $this->line("  <fg=green;options=bold>✓ FusterAI updated to {$latest} successfully!</>");
+        $this->line("  <fg=green;options=bold>✓ Garza Support updated to {$latest} successfully!</>");
         $this->newLine();
         $horizon = $this->isHorizonInstalled() ? 'Horizon' : 'queue workers';
         $this->line("  <fg=gray>Tip: If you use Supervisor, restart it to reload {$horizon}.</>");

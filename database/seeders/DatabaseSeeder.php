@@ -28,12 +28,12 @@ class DatabaseSeeder extends Seeder
 
         $workspace = Workspace::firstOrCreate(
             ['slug' => 'default'],
-            ['name' => 'FusterAI Demo', 'slug' => 'default']
+            ['name' => 'Garza Support Demo', 'slug' => 'default']
         );
 
         // ── Users ────────────────────────────────────────────────────────────────
 
-        $admin = User::firstOrCreate(['email' => 'admin@fusterai.com'], [
+        $admin = User::firstOrCreate(['email' => 'admin@garzasupport.com'], [
             'name' => 'Admin User',
             'password' => Hash::make('password'),
             'workspace_id' => $workspace->id,
@@ -63,21 +63,21 @@ class DatabaseSeeder extends Seeder
 
         // ── Mailboxes ────────────────────────────────────────────────────────────
 
-        $supportMailbox = Mailbox::firstOrCreate(['email' => 'support@fusterai.dev'], [
+        $supportMailbox = Mailbox::firstOrCreate(['email' => 'support@garzasupport.dev'], [
             'workspace_id' => $workspace->id,
             'name' => 'Support',
             'active' => true,
             'channel_type' => 'email',
         ]);
 
-        $salesMailbox = Mailbox::firstOrCreate(['email' => 'sales@fusterai.dev'], [
+        $salesMailbox = Mailbox::firstOrCreate(['email' => 'sales@garzasupport.dev'], [
             'workspace_id' => $workspace->id,
             'name' => 'Sales',
             'active' => true,
             'channel_type' => 'email',
         ]);
 
-        $chatMailbox = Mailbox::firstOrCreate(['email' => 'chat@fusterai.dev'], [
+        $chatMailbox = Mailbox::firstOrCreate(['email' => 'chat@garzasupport.dev'], [
             'workspace_id' => $workspace->id,
             'name' => 'Live Chat',
             'active' => true,
@@ -202,7 +202,7 @@ class DatabaseSeeder extends Seeder
                 'threads' => [
                     ['from' => 'customer', 'body' => "Hello, we configured webhooks to fire on new conversations but they're not being delivered. Our endpoint is publicly accessible and returns 200. We've been waiting 2 days for this to work."],
                     ['from' => 'agent',    'body' => "Hi Sophie, let me check your webhook delivery logs. Can you share the endpoint URL you've configured and your workspace ID?", 'user' => $agent1],
-                    ['from' => 'customer', 'body' => 'Endpoint: https://api.frenchco.fr/hooks/fusterai — workspace ID in my account settings.'],
+                    ['from' => 'customer', 'body' => 'Endpoint: https://api.frenchco.fr/hooks/garza — workspace ID in my account settings.'],
                 ],
             ],
             [
@@ -292,7 +292,7 @@ class DatabaseSeeder extends Seeder
                 'channel' => 'email',
                 'threads' => [
                     ['from' => 'customer', 'body' => "We're trying to configure SAML SSO with Okta but the assertion consumer service URL doesn't seem right. Users get redirected back to login. We need this working for our company security policy."],
-                    ['from' => 'agent',    'body' => 'Hi Ben, SAML configuration can be tricky. Can you share your Okta IdP metadata URL? Also make sure your ACS URL is set to: https://app.fusterai.com/auth/saml/callback', 'user' => $admin],
+                    ['from' => 'agent',    'body' => 'Hi Ben, SAML configuration can be tricky. Can you share your Okta IdP metadata URL? Also make sure your ACS URL is set to: https://app.garzasupport.com/auth/saml/callback', 'user' => $admin],
                     ['from' => 'customer', 'body' => "Updated the ACS URL and it got further, but now getting 'Invalid signature'. Our metadata URL: https://dev-12345.okta.com/app/metadata.xml"],
                 ],
             ],
@@ -306,7 +306,7 @@ class DatabaseSeeder extends Seeder
                 'tags' => ['onboarding'],
                 'channel' => 'email',
                 'threads' => [
-                    ['from' => 'customer', 'body' => "Hello, we're a team of 50 evaluating helpdesk solutions. Very interested in FusterAI but need enterprise pricing for our volume."],
+                    ['from' => 'customer', 'body' => "Hello, we're a team of 50 evaluating helpdesk solutions. Very interested in Garza Support but need enterprise pricing for our volume."],
                     ['from' => 'agent',    'body' => "Hi Omar! Our Enterprise plan offers unlimited agents, custom SLAs, dedicated support, and SSO. I'd love to schedule a demo. Are you available this week?", 'user' => $agent2],
                     ['from' => 'customer', 'body' => "Thursday or Friday afternoon works. Let's connect!"],
                     ['from' => 'note',     'body' => 'Very promising lead — 50 agents, currently on Zendesk. Budget mentioned is $2k/month. Scheduled demo for Thursday 3pm.', 'user' => $agent2],
@@ -502,7 +502,7 @@ class DatabaseSeeder extends Seeder
                 'threads' => [
                     ['from' => 'customer', 'body' => "The live chat widget isn't appearing on our website. We copied the embed code but nothing shows up."],
                     ['from' => 'agent',    'body' => "Hi Priya! First, check your browser console for errors. Also make sure you're loading the widget after the DOM is ready. What framework is your site built with?", 'user' => $agent3],
-                    ['from' => 'customer', 'body' => "We're using Next.js. Browser console shows: 'Uncaught ReferenceError: FusterAI is not defined'."],
+                    ['from' => 'customer', 'body' => "We're using Next.js. Browser console shows: 'Uncaught ReferenceError: GarzaSupport is not defined'."],
                 ],
             ],
             [
@@ -515,7 +515,7 @@ class DatabaseSeeder extends Seeder
                 'tags' => [],
                 'channel' => 'chat',
                 'threads' => [
-                    ['from' => 'customer', 'body' => 'Does FusterAI automatically respond to common questions with AI?'],
+                    ['from' => 'customer', 'body' => 'Does Garza Support automatically respond to common questions with AI?'],
                     ['from' => 'agent',    'body' => 'Great question! The AI suggests replies in real-time but agents review and send them. You can also set up automated responses for common questions using our automation rules. Want me to show you a demo?', 'user' => $agent2],
                     ['from' => 'customer', 'body' => 'That sounds perfect. Yes to the demo!'],
                     ['from' => 'agent',    'body' => "I'll book one for you — check your email for the calendar invite 🗓", 'user' => $agent2],
@@ -551,7 +551,7 @@ class DatabaseSeeder extends Seeder
                     ['from' => 'customer', 'body' => "We're undergoing a SOC2 audit and need to understand your data retention policies. Specifically: how long do you retain conversation data, where is it stored, and can we request deletion?"],
                     ['from' => 'agent',    'body' => 'Hi Mark, great questions for compliance. Conversation data is retained for the lifetime of your account plus 30 days after cancellation. Data is stored in EU-West (AWS). You can request a full data export or deletion anytime from Settings → Privacy.', 'user' => $admin],
                     ['from' => 'customer', 'body' => 'Is there a Data Processing Agreement (DPA) we can sign?'],
-                    ['from' => 'agent',    'body' => 'Yes! Our DPA is available at trust.fusterai.com/dpa — you can sign it electronically there. If you need custom DPA terms, contact legal@fusterai.com.', 'user' => $admin],
+                    ['from' => 'agent',    'body' => 'Yes! Our DPA is available at trust.garzasupport.com/dpa — you can sign it electronically there. If you need custom DPA terms, contact legal@garzasupport.com.', 'user' => $admin],
                     ['from' => 'customer', 'body' => 'Perfect, exactly what I needed. Signing now.'],
                 ],
             ],
@@ -633,19 +633,19 @@ class DatabaseSeeder extends Seeder
         $kb = KnowledgeBase::firstOrCreate(
             ['workspace_id' => $workspace->id, 'name' => 'Help Center'],
             [
-                'description' => 'FusterAI documentation and support articles',
+                'description' => 'Garza Support documentation and support articles',
                 'active' => true,
             ]
         );
 
         $kbArticles = [
-            ['title' => 'Getting started with FusterAI',      'content' => 'FusterAI is an AI-first helpdesk platform. This guide walks you through setting up your workspace, inviting team members, and connecting your first email mailbox.'],
-            ['title' => 'How to configure email IMAP/SMTP',   'content' => 'To connect your email inbox, go to Settings → Mailboxes → New Mailbox. Enter your IMAP settings for receiving emails and SMTP settings for sending. FusterAI supports Gmail, Outlook, and any standard IMAP/SMTP provider.'],
-            ['title' => 'Understanding AI reply suggestions',  'content' => 'FusterAI automatically generates reply suggestions using Claude AI. Suggestions appear in the AI panel on the right side of each conversation. You can accept, edit, or dismiss suggestions. AI context includes the full conversation history and your knowledge base.'],
+            ['title' => 'Getting started with Garza Support',      'content' => 'Garza Support is an AI-first helpdesk platform. This guide walks you through setting up your workspace, inviting team members, and connecting your first email mailbox.'],
+            ['title' => 'How to configure email IMAP/SMTP',   'content' => 'To connect your email inbox, go to Settings → Mailboxes → New Mailbox. Enter your IMAP settings for receiving emails and SMTP settings for sending. Garza Support supports Gmail, Outlook, and any standard IMAP/SMTP provider.'],
+            ['title' => 'Understanding AI reply suggestions',  'content' => 'Garza Support automatically generates reply suggestions using Claude AI. Suggestions appear in the AI panel on the right side of each conversation. You can accept, edit, or dismiss suggestions. AI context includes the full conversation history and your knowledge base.'],
             ['title' => 'Setting up automation rules',        'content' => 'Automation rules let you automatically route, tag, and reply to conversations. Go to Settings → Automation → New Rule. Choose a trigger (conversation created, reply received) and define conditions and actions.'],
             ['title' => 'SLA policies explained',             'content' => 'SLA (Service Level Agreement) policies define response and resolution time targets by ticket priority. Urgent tickets default to 1h first response / 4h resolution. You can customize policies in Settings → SLA.'],
             ['title' => 'Exporting conversation data',        'content' => "To export your data for compliance or migration: go to Settings → General → Export Data. You'll receive a download link via email within 15 minutes. The export includes all conversations, threads, customers, and attachments."],
-            ['title' => 'Live chat widget installation',      'content' => 'Add the FusterAI live chat widget to your website by copying the embed code from Settings → Channels → Live Chat. Paste it before the closing </body> tag. The widget supports React, Next.js, and plain HTML.'],
+            ['title' => 'Live chat widget installation',      'content' => 'Add the Garza Support live chat widget to your website by copying the embed code from Settings → Channels → Live Chat. Paste it before the closing </body> tag. The widget supports React, Next.js, and plain HTML.'],
             ['title' => 'REST API authentication',            'content' => 'Authenticate API requests using a Bearer token. Generate a personal access token from Settings → API → Personal Tokens. Pass it as: Authorization: Bearer <your-token>. Rate limit: 60 requests per minute.'],
         ];
 

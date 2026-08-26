@@ -48,6 +48,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect('/conversations')->with('success', 'Welcome to FusterAI! Your workspace is ready.');
+        return redirect('/conversations')->with('success', 'Welcome to Garza Support! Your workspace is ready.');
     }
 }
