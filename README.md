@@ -185,7 +185,7 @@ Codespaces builds the full stack (PHP 8.4, PostgreSQL, Redis, MeiliSearch) and r
 ```bash
 # 1. Clone
 git clone https://github.com/garzasupport/garza-support.git
-cd garza
+cd garza-support
 
 # 2. Install PHP dependencies (throwaway container — no local PHP needed)
 docker run --rm -u "$(id -u):$(id -g)" \
@@ -252,7 +252,7 @@ sail build --no-cache && sail up -d   # Rebuild after Dockerfile changes
 ```bash
 # 1. Clone and install
 git clone https://github.com/garzasupport/garza-support.git
-cd garza
+cd garza-support
 composer install && npm install
 
 # 2. Environment

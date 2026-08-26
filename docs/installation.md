@@ -28,7 +28,7 @@ Laravel Sail is Garza Support's Docker-based development environment. All depend
 
 ```bash
 git clone https://github.com/your-org/garza-support.git
-cd garza
+cd garza-support
 ```
 
 ### Step 2 — Install PHP dependencies
@@ -203,7 +203,7 @@ CREATE EXTENSION vector;
 
 ```bash
 git clone https://github.com/your-org/garza-support.git
-cd garza
+cd garza-support
 
 # Install PHP dependencies
 composer install

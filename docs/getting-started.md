@@ -184,7 +184,7 @@ Embed a real-time chat widget on your website:
 
 ```html
 <script>
-  window.Garza SupportConfig = {
+  window.GarzaSupportChat = {
     workspaceId: 'your-workspace-id',
     serverUrl: 'https://your-garzasupport.com'
   };
