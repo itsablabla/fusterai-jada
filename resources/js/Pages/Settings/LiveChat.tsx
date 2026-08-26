@@ -31,9 +31,9 @@ export default function LiveChatSettings({ workspaceId, themeColorHex, config, s
     const { data, setData, patch, processing } = useForm({ ...config });
     const [copied, setCopied] = React.useState(false);
 
-    const embedCode = `<!-- FusterAI Live Chat Widget -->
+    const embedCode = `<!-- Garza Support Live Chat Widget -->
 <script>
-  window.FusterAIChat = {
+  window.GarzaSupportChat = {
     workspaceId: ${workspaceId},
     wsKey:       '${snippet.wsKey}',
     wsHost:      '${snippet.wsHost}',

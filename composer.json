@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "fusterai/fusterai",
+    "name": "garzasupport/garza-support",
     "version": "1.0.0",
     "type": "project",
     "description": "AI-First Support Agent. Open-source, self-hosted customer support platform built for 2026 with Laravel 12 and React 19.",

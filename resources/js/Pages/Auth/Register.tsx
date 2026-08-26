@@ -20,7 +20,7 @@ export default function Register() {
     }
 
     return (
-        <AuthLayout title="Create your workspace" subtitle="Set up FusterAI for your team in under a minute">
+        <AuthLayout title="Create your workspace" subtitle="Set up Garza Support for your team in under a minute">
             <Head title="Get started" />
 
             <form onSubmit={submit} className="space-y-4">

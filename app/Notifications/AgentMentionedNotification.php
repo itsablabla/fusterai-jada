@@ -40,7 +40,7 @@ class AgentMentionedNotification extends Notification implements ShouldBroadcast
             ->greeting("Hi {$notifiable->name},")
             ->line("{$this->mentionedBy} mentioned you in a note on **{$this->conversation->subject}**")
             ->action('View Conversation', url("/conversations/{$this->conversation->id}"))
-            ->line('Login to FusterAI to respond.');
+            ->line('Login to Garza Support to respond.');
     }
 
     public function toArray(mixed $notifiable): array

@@ -1,6 +1,6 @@
 # Module Development Guide
 
-FusterAI includes a lightweight module/plugin system that lets you extend the platform without modifying core code. Modules live in the `Modules/` directory and are auto-discovered by `ModuleServiceProvider`.
+Garza Support includes a lightweight module/plugin system that lets you extend the platform without modifying core code. Modules live in the `Modules/` directory and are auto-discovered by `ModuleServiceProvider`.
 
 ---
 
@@ -106,7 +106,7 @@ return [
 
 ## Hook System
 
-The hook system is FusterAI's event/filter bus for modules.
+The hook system is Garza Support's event/filter bus for modules.
 
 ### Actions (one-way events)
 
@@ -391,5 +391,5 @@ To share a module with the community:
 
 1. Create a standalone Composer package
 2. In `composer.json`, add the service provider to `extra.laravel.providers`
-3. Users install with `composer require vendor/fusterai-my-module`
+3. Users install with `composer require vendor/garza-my-module`
 4. The module auto-registers via Laravel's package discovery

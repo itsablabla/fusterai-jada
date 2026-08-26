@@ -321,7 +321,7 @@ export default function MailboxSettings({ mailbox }: Props) {
                                 <ServerIcon className="h-4 w-4 text-muted-foreground" />
                                 <CardTitle>Incoming Mail (IMAP)</CardTitle>
                             </div>
-                            <CardDescription>Configure how FusterAI fetches emails from your inbox.</CardDescription>
+                            <CardDescription>Configure how Garza Support fetches emails from your inbox.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5">
                             <Field label="IMAP host" htmlFor="imap-host">
@@ -389,7 +389,7 @@ export default function MailboxSettings({ mailbox }: Props) {
                                 <CardTitle>Outgoing Mail (SMTP)</CardTitle>
                             </div>
                             <CardDescription>
-                                Configure how FusterAI sends replies and notifications on behalf of this mailbox.
+                                Configure how Garza Support sends replies and notifications on behalf of this mailbox.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5">

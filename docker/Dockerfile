@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-LABEL maintainer="FusterAI"
+LABEL maintainer="Garza Support"
 
 ARG WWWGROUP=1000
 ARG NODE_VERSION=20

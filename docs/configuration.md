@@ -8,11 +8,11 @@ All configuration is done via the `.env` file. Copy `.env.example` (manual insta
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `APP_NAME` | `FusterAI` | No | Application name shown in UI and emails |
+| `APP_NAME` | `Garza Support` | No | Application name shown in UI and emails |
 | `APP_ENV` | `local` | Yes | `local`, `staging`, or `production` |
 | `APP_KEY` | _(empty)_ | **Yes** | 32-byte encryption key — run `php artisan key:generate` |
 | `APP_DEBUG` | `true` | Yes | Set to `false` in production |
-| `APP_URL` | `http://localhost` | Yes | Public URL of your FusterAI instance |
+| `APP_URL` | `http://localhost` | Yes | Public URL of your Garza Support instance |
 | `APP_HOST` | `localhost` | No | Hostname portion of APP_URL (used by Docker) |
 | `APP_PORT` | `8000` | No | HTTP port to expose |
 | `APP_LOCALE` | `en` | No | Default application locale |
@@ -24,11 +24,11 @@ All configuration is done via the `.env` file. Copy `.env.example` (manual insta
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `DB_CONNECTION` | `pgsql` | Yes | Must be `pgsql` — FusterAI requires PostgreSQL |
+| `DB_CONNECTION` | `pgsql` | Yes | Must be `pgsql` — Garza Support requires PostgreSQL |
 | `DB_HOST` | `127.0.0.1` | Yes | PostgreSQL host (`postgres` in Docker) |
 | `DB_PORT` | `5432` | No | PostgreSQL port |
-| `DB_DATABASE` | `fusterai` | Yes | Database name |
-| `DB_USERNAME` | `fusterai` | Yes | Database user |
+| `DB_DATABASE` | `garza` | Yes | Database name |
+| `DB_USERNAME` | `garza` | Yes | Database user |
 | `DB_PASSWORD` | `secret` | **Yes** | Database password — change in production |
 
 > **Requirement:** pgvector extension must be enabled in your database. Docker handles this automatically via the `pgvector/pgvector:pg17` image. For manual setups, run `CREATE EXTENSION vector;` in your database.
@@ -55,7 +55,7 @@ All configuration is done via the `.env` file. Copy `.env.example` (manual insta
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `REVERB_APP_ID` | `fusterai` | Yes | Application identifier |
+| `REVERB_APP_ID` | `garza` | Yes | Application identifier |
 | `REVERB_APP_KEY` | _(placeholder)_ | **Yes** | Public key for WebSocket auth — use a random string |
 | `REVERB_APP_SECRET` | _(placeholder)_ | **Yes** | Private secret for WebSocket signing — use a random string |
 | `REVERB_HOST` | `localhost` | Yes | Host Reverb listens on (`0.0.0.0` in Docker) |
@@ -155,7 +155,7 @@ Then view emails at http://localhost:8025.
 FILESYSTEM_DISK=s3
 AWS_ENDPOINT=http://localhost:9000
 AWS_USE_PATH_STYLE_ENDPOINT=true
-AWS_BUCKET=fusterai
+AWS_BUCKET=garza
 
 # Cloudflare R2
 FILESYSTEM_DISK=s3

@@ -2,7 +2,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| FusterAI Module Configuration
+| Garza Support Module Configuration
 |--------------------------------------------------------------------------
 | Custom lightweight module system. Modules live under Modules/{Alias}/
 | and are registered via App\Providers\ModuleServiceProvider.

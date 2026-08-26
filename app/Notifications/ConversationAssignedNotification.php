@@ -37,7 +37,7 @@ class ConversationAssignedNotification extends Notification implements ShouldBro
             ->greeting("Hi {$notifiable->name},")
             ->line("A conversation has been assigned to you: **{$this->conversation->subject}**")
             ->action('View Conversation', url("/conversations/{$this->conversation->id}"))
-            ->line('Login to FusterAI to respond.');
+            ->line('Login to Garza Support to respond.');
     }
 
     public function toArray(mixed $notifiable): array

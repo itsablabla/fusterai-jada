@@ -27,11 +27,14 @@
                     contrast: @json($appearanceDefaults['contrast'] ?? 'balanced'),
                 };
 
-                const storedMode = localStorage.getItem('fusterai-theme-mode');
-                const storedColor = localStorage.getItem('fusterai-theme-color');
-                const storedFont = localStorage.getItem('fusterai-theme-font');
-                const storedRadius = localStorage.getItem('fusterai-theme-radius');
-                const storedContrast = localStorage.getItem('fusterai-theme-contrast');
+                // Read the new keys, falling back to the legacy pre-rebrand keys.
+                const readKey = (key) => localStorage.getItem('garza-theme-' + key) ?? localStorage.getItem('fusterai-theme-' + key);
+
+                const storedMode = readKey('mode');
+                const storedColor = readKey('color');
+                const storedFont = readKey('font');
+                const storedRadius = readKey('radius');
+                const storedContrast = readKey('contrast');
 
                 const theme = storedMode === 'light' || storedMode === 'dark' || storedMode === 'system'
                     ? storedMode
@@ -52,7 +55,7 @@
             })();
         </script>
 
-        <title inertia>{{ config('app.name', 'FusterAI') }}</title>
+        <title inertia>{{ config('app.name', 'Garza Support') }}</title>
 
         @routes
         @viteReactRefresh

@@ -72,6 +72,6 @@ class InviteController extends Controller
         $user = User::where('email', $validated['email'])->firstOrFail();
         Auth::login($user);
 
-        return redirect('/conversations')->with('success', 'Welcome to FusterAI!');
+        return redirect('/conversations')->with('success', 'Welcome to Garza Support!');
     }
 }

@@ -82,7 +82,8 @@ class FetchEmails extends Command
                         'auto_submitted' => (string) ($message->getHeader('Auto-Submitted') ?? ''),
                         'x_auto_response_suppress' => (string) ($message->getHeader('X-Auto-Response-Suppress') ?? ''),
                         'precedence' => (string) ($message->getHeader('Precedence') ?? ''),
-                        'x_fusterai_auto_reply' => (string) ($message->getHeader('X-FusterAI-AutoReply') ?? ''),
+                        // Also read the legacy pre-rebrand header for emails sent before the rename.
+                        'x_garza_auto_reply' => (string) ($message->getHeader('X-Garza-AutoReply') ?? $message->getHeader('X-FusterAI-AutoReply') ?? ''),
                     ],
                 ])->onQueue('email-inbound');
 

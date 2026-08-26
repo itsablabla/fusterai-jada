@@ -1,15 +1,17 @@
 /**
- * FusterAI Live Chat Widget
+ * Garza Support Live Chat Widget
  *
  * Embed: <script src="/livechat/widget.js"></script>
- * Config: window.FusterAIChat = { workspaceId: 1, wsKey: 'your-key', wsHost: 'localhost', wsPort: 6001 }
+ * Config: window.GarzaSupportChat = { workspaceId: 1, wsKey: 'your-key', wsHost: 'localhost', wsPort: 6001 }
  */
 (function () {
     'use strict';
 
     // -- Config ----------------------------------------------------------------
 
-    var config = window.FusterAIChat || {};
+    // window.FusterAIChat is the legacy pre-rebrand config global, kept as a fallback
+    // so existing embeds keep working.
+    var config = window.GarzaSupportChat || window.FusterAIChat || {};
     var workspaceId = config.workspaceId || null;
     var wsKey       = config.wsKey       || '';
     var wsHost      = config.wsHost      || window.location.hostname;
@@ -18,7 +20,7 @@
     var apiBase     = config.apiBase     || '';
 
     if (!workspaceId) {
-        console.warn('[FusterAI Chat] No workspaceId configured. Set window.FusterAIChat.workspaceId.');
+        console.warn('[Garza Support Chat] No workspaceId configured. Set window.GarzaSupportChat.workspaceId.');
     }
 
     // -- Branding (loaded from workspace settings) -----------------------------
@@ -33,14 +35,14 @@
         btn.style.background = brandColor;
 
         // Header color
-        var header = document.getElementById('fusterai-chat-header');
+        var header = document.getElementById('garza-chat-header');
         if (header) header.style.background = brandColor;
 
         // Header text
         if (header) header.textContent = brandGreeting;
 
         // Send button color
-        var sendButton = document.getElementById('fusterai-chat-send');
+        var sendButton = document.getElementById('garza-chat-send');
         if (sendButton) sendButton.style.background = brandColor;
 
         // Input focus color via CSS var not easily settable; skip for now
@@ -78,10 +80,26 @@
 
     // -- Visitor Identity ------------------------------------------------------
 
-    var LS_KEY_ID    = 'fusterai_visitor_id';
-    var LS_KEY_NAME  = 'fusterai_visitor_name';
-    var LS_KEY_EMAIL = 'fusterai_visitor_email';
-    var LS_KEY_CONV  = 'fusterai_conversation_id';
+    var LS_KEY_ID    = 'garza_visitor_id';
+    var LS_KEY_NAME  = 'garza_visitor_name';
+    var LS_KEY_EMAIL = 'garza_visitor_email';
+    var LS_KEY_CONV  = 'garza_conversation_id';
+
+    // One-time migration of visitor identity stored under the legacy pre-rebrand keys.
+    (function migrateLegacyKeys() {
+        var legacy = {
+            garza_visitor_id: 'fusterai_visitor_id',
+            garza_visitor_name: 'fusterai_visitor_name',
+            garza_visitor_email: 'fusterai_visitor_email',
+            garza_conversation_id: 'fusterai_conversation_id'
+        };
+        for (var newKey in legacy) {
+            if (localStorage.getItem(newKey) === null) {
+                var oldValue = localStorage.getItem(legacy[newKey]);
+                if (oldValue !== null) localStorage.setItem(newKey, oldValue);
+            }
+        }
+    })();
 
     function generateId() {
         if (window.crypto && window.crypto.randomUUID) {
@@ -108,7 +126,7 @@
     // -- Styles ----------------------------------------------------------------
 
     var css = [
-        '#fusterai-chat-btn {',
+        '#garza-chat-btn {',
         '  position: fixed; bottom: 24px; right: 24px; z-index: 9999;',
         '  width: 56px; height: 56px; border-radius: 50%;',
         '  background: #4F46E5; border: none; cursor: pointer;',
@@ -116,9 +134,9 @@
         '  box-shadow: 0 4px 14px rgba(0,0,0,0.25);',
         '  transition: transform 0.2s; outline: none;',
         '}',
-        '#fusterai-chat-btn:hover { transform: scale(1.1); }',
-        '#fusterai-chat-btn svg { width: 26px; height: 26px; fill: #fff; }',
-        '#fusterai-chat-panel {',
+        '#garza-chat-btn:hover { transform: scale(1.1); }',
+        '#garza-chat-btn svg { width: 26px; height: 26px; fill: #fff; }',
+        '#garza-chat-panel {',
         '  position: fixed; bottom: 92px; right: 24px; z-index: 9998;',
         '  width: 340px; max-height: 520px;',
         '  background: #fff; border-radius: 12px;',
@@ -127,56 +145,56 @@
         '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;',
         '  font-size: 14px;',
         '}',
-        '#fusterai-chat-panel.hidden { display: none; }',
-        '#fusterai-chat-header {',
+        '#garza-chat-panel.hidden { display: none; }',
+        '#garza-chat-header {',
         '  background: #4F46E5; color: #fff; padding: 16px;',
         '  font-size: 16px; font-weight: 600;',
         '}',
-        '#fusterai-chat-messages {',
+        '#garza-chat-messages {',
         '  flex: 1; overflow-y: auto; padding: 12px;',
         '  display: flex; flex-direction: column; gap: 8px;',
         '}',
-        '.fusterai-msg {',
+        '.garza-msg {',
         '  max-width: 80%; padding: 8px 12px; border-radius: 10px;',
         '  line-height: 1.4; word-wrap: break-word;',
         '}',
-        '.fusterai-msg-visitor {',
+        '.garza-msg-visitor {',
         '  align-self: flex-end; background: #4F46E5; color: #fff;',
         '  border-bottom-right-radius: 2px;',
         '}',
-        '.fusterai-msg-agent {',
+        '.garza-msg-agent {',
         '  align-self: flex-start; background: #F3F4F6; color: #111;',
         '  border-bottom-left-radius: 2px;',
         '}',
-        '.fusterai-msg-meta {',
+        '.garza-msg-meta {',
         '  font-size: 11px; opacity: 0.65; margin-top: 2px;',
         '}',
-        '#fusterai-chat-footer {',
+        '#garza-chat-footer {',
         '  border-top: 1px solid #E5E7EB; padding: 10px 12px;',
         '  display: flex; gap: 8px; align-items: flex-end;',
         '}',
-        '#fusterai-chat-input {',
+        '#garza-chat-input {',
         '  flex: 1; resize: none; border: 1px solid #D1D5DB; border-radius: 8px;',
         '  padding: 8px 10px; font-size: 14px; outline: none;',
         '  font-family: inherit; max-height: 100px;',
         '}',
-        '#fusterai-chat-input:focus { border-color: #4F46E5; }',
-        '#fusterai-chat-send {',
+        '#garza-chat-input:focus { border-color: #4F46E5; }',
+        '#garza-chat-send {',
         '  background: #4F46E5; color: #fff; border: none;',
         '  border-radius: 8px; padding: 8px 14px; cursor: pointer;',
         '  font-size: 14px; white-space: nowrap;',
         '}',
-        '#fusterai-chat-send:hover { background: #4338CA; }',
-        '#fusterai-chat-send:disabled { opacity: 0.5; cursor: default; }',
-        '#fusterai-name-prompt {',
+        '#garza-chat-send:hover { background: #4338CA; }',
+        '#garza-chat-send:disabled { opacity: 0.5; cursor: default; }',
+        '#garza-name-prompt {',
         '  padding: 16px; display: flex; flex-direction: column; gap: 10px;',
         '}',
-        '#fusterai-name-prompt input {',
+        '#garza-name-prompt input {',
         '  border: 1px solid #D1D5DB; border-radius: 8px; padding: 8px 10px;',
         '  font-size: 14px; outline: none; font-family: inherit;',
         '}',
-        '#fusterai-name-prompt input:focus { border-color: #4F46E5; }',
-        '#fusterai-name-prompt button {',
+        '#garza-name-prompt input:focus { border-color: #4F46E5; }',
+        '#garza-name-prompt button {',
         '  background: #4F46E5; color: #fff; border: none; border-radius: 8px;',
         '  padding: 9px; cursor: pointer; font-size: 14px;',
         '}',
@@ -190,7 +208,7 @@
 
     // Toggle button
     var btn = document.createElement('button');
-    btn.id = 'fusterai-chat-btn';
+    btn.id = 'garza-chat-btn';
     btn.setAttribute('aria-label', 'Open chat');
     btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'
         + '<path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>'
@@ -199,7 +217,7 @@
 
     // Unread badge on the launcher button
     var badge = document.createElement('span');
-    badge.id = 'fusterai-unread-badge';
+    badge.id = 'garza-unread-badge';
     badge.style.cssText = [
         'position:absolute;top:-4px;right:-4px;',
         'background:#EF4444;color:#fff;',
@@ -239,21 +257,21 @@
 
     // Chat panel
     var panel = document.createElement('div');
-    panel.id = 'fusterai-chat-panel';
+    panel.id = 'garza-chat-panel';
     panel.className = 'hidden';
     panel.innerHTML = [
-        '<div id="fusterai-chat-header">Chat with us</div>',
-        '<div id="fusterai-chat-messages"></div>',
-        '<div id="fusterai-chat-footer">',
-        '  <textarea id="fusterai-chat-input" placeholder="Type a message..." rows="1"></textarea>',
-        '  <button id="fusterai-chat-send">Send</button>',
+        '<div id="garza-chat-header">Chat with us</div>',
+        '<div id="garza-chat-messages"></div>',
+        '<div id="garza-chat-footer">',
+        '  <textarea id="garza-chat-input" placeholder="Type a message..." rows="1"></textarea>',
+        '  <button id="garza-chat-send">Send</button>',
         '</div>',
     ].join('');
     document.body.appendChild(panel);
 
-    var messagesEl = document.getElementById('fusterai-chat-messages');
-    var inputEl    = document.getElementById('fusterai-chat-input');
-    var sendBtn    = document.getElementById('fusterai-chat-send');
+    var messagesEl = document.getElementById('garza-chat-messages');
+    var inputEl    = document.getElementById('garza-chat-input');
+    var sendBtn    = document.getElementById('garza-chat-send');
 
     // Fetch workspace branding and apply it
     fetchBranding();
@@ -261,25 +279,25 @@
     // -- Name prompt (shown the first time) ------------------------------------
 
     function showNamePrompt() {
-        var footer = document.getElementById('fusterai-chat-footer');
+        var footer = document.getElementById('garza-chat-footer');
         footer.style.display = 'none';
 
         var prompt = document.createElement('div');
-        prompt.id = 'fusterai-name-prompt';
+        prompt.id = 'garza-name-prompt';
         prompt.innerHTML = [
             '<div style="font-weight:600;color:#374151">Before we start...</div>',
-            '<input id="fusterai-name-input" type="text" placeholder="Your name" maxlength="100" value="' + (localStorage.getItem(LS_KEY_NAME) !== 'Visitor' ? (localStorage.getItem(LS_KEY_NAME) || '') : '') + '"/>',
-            '<input id="fusterai-email-input" type="email" placeholder="Your email address" maxlength="255" value="' + (localStorage.getItem(LS_KEY_EMAIL) || '') + '"/>',
-            '<button id="fusterai-name-submit">Start chat</button>',
+            '<input id="garza-name-input" type="text" placeholder="Your name" maxlength="100" value="' + (localStorage.getItem(LS_KEY_NAME) !== 'Visitor' ? (localStorage.getItem(LS_KEY_NAME) || '') : '') + '"/>',
+            '<input id="garza-email-input" type="email" placeholder="Your email address" maxlength="255" value="' + (localStorage.getItem(LS_KEY_EMAIL) || '') + '"/>',
+            '<button id="garza-name-submit">Start chat</button>',
         ].join('');
         panel.appendChild(prompt);
 
-        document.getElementById('fusterai-name-submit').addEventListener('click', function () {
-            var name  = (document.getElementById('fusterai-name-input').value  || '').trim();
-            var email = (document.getElementById('fusterai-email-input').value || '').trim();
+        document.getElementById('garza-name-submit').addEventListener('click', function () {
+            var name  = (document.getElementById('garza-name-input').value  || '').trim();
+            var email = (document.getElementById('garza-email-input').value || '').trim();
 
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                document.getElementById('fusterai-email-input').style.borderColor = '#EF4444';
+                document.getElementById('garza-email-input').style.borderColor = '#EF4444';
                 return;
             }
 
@@ -302,11 +320,11 @@
         wrap.style.alignItems = side === 'visitor' ? 'flex-end' : 'flex-start';
 
         var bubble = document.createElement('div');
-        bubble.className = 'fusterai-msg fusterai-msg-' + side;
+        bubble.className = 'garza-msg garza-msg-' + side;
         bubble.textContent = text;
 
         var meta = document.createElement('div');
-        meta.className = 'fusterai-msg-meta';
+        meta.className = 'garza-msg-meta';
         meta.textContent = authorLabel || (side === 'visitor' ? 'You' : 'Support');
 
         wrap.appendChild(bubble);
@@ -323,35 +341,35 @@
     function showAgentTyping(agentName) {
         if (!typingEl) {
             typingEl = document.createElement('div');
-            typingEl.id = 'fusterai-typing';
+            typingEl.id = 'garza-typing';
             typingEl.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;';
             typingEl.innerHTML = [
                 '<div style="display:flex;align-items:center;gap:3px;background:#F3F4F6;padding:8px 12px;border-radius:10px;border-bottom-left-radius:2px;">',
-                '  <span class="fusterai-dot"></span>',
-                '  <span class="fusterai-dot"></span>',
-                '  <span class="fusterai-dot"></span>',
+                '  <span class="garza-dot"></span>',
+                '  <span class="garza-dot"></span>',
+                '  <span class="garza-dot"></span>',
                 '</div>',
-                '<div class="fusterai-msg-meta" id="fusterai-typing-label"></div>',
+                '<div class="garza-msg-meta" id="garza-typing-label"></div>',
             ].join('');
 
             // Inject dot animation CSS once
-            if (!document.getElementById('fusterai-dot-style')) {
+            if (!document.getElementById('garza-dot-style')) {
                 var dotStyle = document.createElement('style');
-                dotStyle.id = 'fusterai-dot-style';
+                dotStyle.id = 'garza-dot-style';
                 dotStyle.textContent = [
-                    '.fusterai-dot {',
+                    '.garza-dot {',
                     '  width:6px;height:6px;border-radius:50%;background:#9CA3AF;',
-                    '  animation:fusterai-bounce 1s infinite;display:inline-block;',
+                    '  animation:garza-bounce 1s infinite;display:inline-block;',
                     '}',
-                    '.fusterai-dot:nth-child(2){animation-delay:0.15s;}',
-                    '.fusterai-dot:nth-child(3){animation-delay:0.3s;}',
-                    '@keyframes fusterai-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}',
+                    '.garza-dot:nth-child(2){animation-delay:0.15s;}',
+                    '.garza-dot:nth-child(3){animation-delay:0.3s;}',
+                    '@keyframes garza-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}',
                 ].join('\n');
                 document.head.appendChild(dotStyle);
             }
         }
 
-        document.getElementById('fusterai-typing-label').textContent = (agentName || 'Agent') + ' is typing…';
+        document.getElementById('garza-typing-label').textContent = (agentName || 'Agent') + ' is typing…';
 
         if (!typingEl.parentNode) {
             messagesEl.appendChild(typingEl);

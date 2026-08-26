@@ -1,6 +1,6 @@
 # AI Setup Guide
 
-FusterAI is AI-native — every conversation benefits from automatic reply suggestions, categorization, summarization, and semantic knowledge base search. This guide covers how to configure and get the most out of these features.
+Garza Support is AI-native — every conversation benefits from automatic reply suggestions, categorization, summarization, and semantic knowledge base search. This guide covers how to configure and get the most out of these features.
 
 ---
 
@@ -49,7 +49,7 @@ OPENAI_COMPATIBLE_API_KEY=ollama  # or any value
 
 ## Step 2 — Configure in Admin Panel
 
-1. Log in to FusterAI
+1. Log in to Garza Support
 2. Go to **Settings → AI Config**
 3. Enter your API key
 4. Select the AI provider and model
@@ -80,7 +80,7 @@ The knowledge base powers **Retrieval-Augmented Generation (RAG)** — when the 
 2. Add title and content (paste text, import from URL, or upload)
 3. Click **Save**
 
-FusterAI automatically:
+Garza Support automatically:
 - Splits documents into chunks
 - Generates embeddings via your configured AI provider
 - Stores embeddings in PostgreSQL pgvector
@@ -152,7 +152,7 @@ Edit `config/horizon.php` to allocate more workers for AI:
 
 ## MCP Server (Model Context Protocol)
 
-FusterAI exposes an MCP server so external AI agents (Claude Desktop, custom agents) can interact directly with your helpdesk.
+Garza Support exposes an MCP server so external AI agents (Claude Desktop, custom agents) can interact directly with your helpdesk.
 
 ### Available tools
 
@@ -167,7 +167,7 @@ FusterAI exposes an MCP server so external AI agents (Claude Desktop, custom age
 
 ### Connect Claude Desktop
 
-1. Create a Personal Access Token in FusterAI:
+1. Create a Personal Access Token in Garza Support:
    - Settings → API Tokens → Create Token
 
 2. Add to your Claude Desktop config (`~/.claude/claude_desktop_config.json`):
@@ -175,7 +175,7 @@ FusterAI exposes an MCP server so external AI agents (Claude Desktop, custom age
 ```json
 {
   "mcpServers": {
-    "fusterai": {
+    "garza": {
       "url": "http://localhost:8000/mcp",
       "headers": {
         "Authorization": "Bearer your-personal-access-token"
@@ -185,7 +185,7 @@ FusterAI exposes an MCP server so external AI agents (Claude Desktop, custom age
 }
 ```
 
-3. Restart Claude Desktop — FusterAI tools will appear in the tools panel.
+3. Restart Claude Desktop — Garza Support tools will appear in the tools panel.
 
 ### OAuth 2.1 Flow (for third-party clients)
 
