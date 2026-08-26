@@ -286,11 +286,16 @@
         prompt.id = 'garza-name-prompt';
         prompt.innerHTML = [
             '<div style="font-weight:600;color:#374151">Before we start...</div>',
-            '<input id="garza-name-input" type="text" placeholder="Your name" maxlength="100" value="' + (localStorage.getItem(LS_KEY_NAME) !== 'Visitor' ? (localStorage.getItem(LS_KEY_NAME) || '') : '') + '"/>',
-            '<input id="garza-email-input" type="email" placeholder="Your email address" maxlength="255" value="' + (localStorage.getItem(LS_KEY_EMAIL) || '') + '"/>',
+            '<input id="garza-name-input" type="text" placeholder="Your name" maxlength="100"/>',
+            '<input id="garza-email-input" type="email" placeholder="Your email address" maxlength="255"/>',
             '<button id="garza-name-submit">Start chat</button>',
         ].join('');
         panel.appendChild(prompt);
+
+        // Prefill stored values via the value property so they are never parsed as HTML.
+        var storedName = localStorage.getItem(LS_KEY_NAME);
+        prompt.querySelector('#garza-name-input').value = storedName !== 'Visitor' ? (storedName || '') : '';
+        prompt.querySelector('#garza-email-input').value = localStorage.getItem(LS_KEY_EMAIL) || '';
 
         document.getElementById('garza-name-submit').addEventListener('click', function () {
             var name  = (document.getElementById('garza-name-input').value  || '').trim();
