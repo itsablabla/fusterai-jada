@@ -90,10 +90,18 @@ gosu www-data php /var/www/html/docker/railway/ai-settings.php 2>&1 || echo "[en
 # and index every chunk. Set FUSTERAI_KB_SEED=true, deploy once, then turn back off.
 if [ "${FUSTERAI_KB_SEED:-false}" = "true" ]; then
   echo "[entrypoint] importing KB seed (FUSTERAI_KB_SEED=true)…"
-  php artisan kb:import kb-seed/nomad.json \
+  # Sync the seed directory from the immutable skeleton onto the volume so
+  # kb:import can read it. The regular skeleton copy uses -n which skips
+  # existing directories, so newly-added seed files never reach the volume.
+  if [ -d /var/www/storage-skeleton/app/kb-seed ]; then
+    mkdir -p storage/app/kb-seed
+    cp -f /var/www/storage-skeleton/app/kb-seed/*.json storage/app/kb-seed/ 2>/dev/null || true
+    chown -R www-data:www-data storage/app/kb-seed
+  fi
+  gosu www-data php artisan kb:import kb-seed/nomad.json \
     --workspace="${FUSTERAI_KB_WORKSPACE:-1}" \
     --kb="${FUSTERAI_KB_NAME:-Nomad Support Playbook}" \
-    --chunk --replace --index 2>&1 | tee -a /dev/stderr
+    --chunk --replace --index 2>&1 | tee -a /dev/stderr || echo "[entrypoint] kb:import failed but continuing"
 fi
 
 if [ "${FUSTERAI_RETRY_FAILED:-false}" = "true" ]; then
