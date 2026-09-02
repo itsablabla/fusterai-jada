@@ -16,8 +16,18 @@ $workspace = getenv('FUSTERAI_BOOTSTRAP_WORKSPACE') ?: 'My Support Team';
 
 echo '[bootstrap] existing users='.\App\Models\User::count().', workspaces='.\App\Models\Workspace::count().PHP_EOL;
 
-if (\App\Models\User::where('email', $email)->exists()) {
-    echo "[bootstrap] user {$email} already exists - skipping".PHP_EOL;
+if ($existing = \App\Models\User::where('email', $email)->first()) {
+    // Idempotent "ensure": make the env password + name authoritative, keep super_admin.
+    $existing->forceFill([
+        'name'              => $name,
+        'password'          => \Illuminate\Support\Facades\Hash::make($password),
+        'role'              => 'super_admin',
+        'email_verified_at' => $existing->email_verified_at ?? now(),
+    ])->save();
+    if ($ws = \App\Models\Workspace::find($existing->workspace_id)) {
+        $ws->update(['name' => $workspace, 'slug' => \Illuminate\Support\Str::slug($workspace)]);
+    }
+    echo "[bootstrap] user {$email} exists - password/name/role synced from env".PHP_EOL;
     exit(0);
 }
 
