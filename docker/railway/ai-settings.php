@@ -48,6 +48,20 @@ foreach (\App\Models\Workspace::query()->orderBy('id')->get() as $ws) {
         $changed = true;
     }
 
+    // Optional RAG tuning via env
+    $rag = $s['ai_rag'] ?? ['top_k' => 5, 'min_score' => 0.7];
+    if (($v = getenv('FUSTERAI_RAG_TOP_K')) !== false && $v !== '' && (int) $v !== ($rag['top_k'] ?? 0)) {
+        $rag['top_k'] = (int) $v;
+        $changed = true;
+        echo "[ai] workspace {$ws->id}: rag.top_k={$rag['top_k']}".PHP_EOL;
+    }
+    if (($v = getenv('FUSTERAI_RAG_MIN_SCORE')) !== false && $v !== '' && (float) $v !== (float) ($rag['min_score'] ?? 0)) {
+        $rag['min_score'] = (float) $v;
+        $changed = true;
+        echo "[ai] workspace {$ws->id}: rag.min_score={$rag['min_score']}".PHP_EOL;
+    }
+    $s['ai_rag'] = $rag;
+
     if ($changed) {
         $ws->settings = $s;
         $ws->save();
