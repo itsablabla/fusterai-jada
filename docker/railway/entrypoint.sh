@@ -104,6 +104,11 @@ if [ "${FUSTERAI_KB_SEED:-false}" = "true" ]; then
     --chunk --replace --index 2>&1 | tee -a /dev/stderr || echo "[entrypoint] kb:import failed but continuing"
 fi
 
+if [ -n "${FUSTERAI_DEBUG_RAG:-}" ]; then
+  echo "[entrypoint] running debug:rag \"${FUSTERAI_DEBUG_RAG}\"…"
+  gosu www-data php artisan debug:rag "${FUSTERAI_KB_WORKSPACE:-1}" "${FUSTERAI_DEBUG_RAG}" 2>&1 || echo "[entrypoint] debug:rag failed"
+fi
+
 if [ "${FUSTERAI_RETRY_FAILED:-false}" = "true" ]; then
   echo "[entrypoint] retrying all failed jobs (FUSTERAI_RETRY_FAILED=true)…"
   gosu www-data php artisan queue:retry all 2>&1 | tail -2 || true
