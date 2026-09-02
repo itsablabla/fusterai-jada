@@ -83,11 +83,26 @@ class AiSettingsService
                 config(['ai.providers.openai.url' => $creds['base_url']]);
             }
 
+            // The Ai manager caches driver instances keyed by name. If it already
+            // instantiated 'openai' with the .env fallback (empty key), embeddings
+            // will 400 with "No credentials for provider: openai" even though we
+            // just injected the real key/url. Flush the cache so the next call
+            // reads our workspace config.
+            try {
+                \Laravel\Ai\Ai::forgetDrivers();
+            } catch (\Throwable) {
+                // No-op if the facade isn't bootable in this context.
+            }
+
             return $callback($creds['lab'], $creds['model']);
         } finally {
             // Always restore — prevents config leakage into subsequent requests/jobs
             config([$configKey => $originalKey]);
             config(['ai.providers.openai.url' => $originalUrl]);
+            try {
+                \Laravel\Ai\Ai::forgetDrivers();
+            } catch (\Throwable) {
+            }
         }
     }
 
