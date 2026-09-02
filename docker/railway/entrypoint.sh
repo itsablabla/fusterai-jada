@@ -51,7 +51,7 @@ fi
 # after the first boot to prevent recreating on redeploys.
 if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD:-}" ]; then
   echo "[entrypoint] bootstrapping admin (${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL})…"
-  gosu -E www-data php -r '
+  gosu www-data php -r '
     require "/var/www/html/vendor/autoload.php";
     $app = require "/var/www/html/bootstrap/app.php";
     $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
