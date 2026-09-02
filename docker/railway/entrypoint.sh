@@ -82,6 +82,9 @@ if [ "${FUSTERAI_TEST_FETCH:-false}" = "true" ]; then
   gosu www-data php artisan emails:fetch -vvv 2>&1 | sed 's/^/[emails:fetch] /' || echo "[entrypoint] one-shot emails:fetch failed"
 fi
 
+# AI settings: report (and optionally enable all features via FUSTERAI_AI_ENABLE_ALL=true)
+gosu www-data php /var/www/html/docker/railway/ai-settings.php 2>&1 || echo "[entrypoint] ai-settings report failed"
+
 # Quick state summary in the boot log (handy for template users and debugging)
 gosu www-data php -r '
   require "/var/www/html/vendor/autoload.php"; $app = require "/var/www/html/bootstrap/app.php";
