@@ -86,6 +86,16 @@ fi
 gosu www-data php /var/www/html/docker/railway/ai-settings.php 2>&1 || echo "[entrypoint] ai-settings report failed"
 
 # Optional: retry every failed job once (e.g. after fixing AI credentials)
+# One-shot KB seed: import storage/app/kb-seed/nomad.json into workspace 1's KB
+# and index every chunk. Set FUSTERAI_KB_SEED=true, deploy once, then turn back off.
+if [ "${FUSTERAI_KB_SEED:-false}" = "true" ]; then
+  echo "[entrypoint] importing KB seed (FUSTERAI_KB_SEED=true)…"
+  php artisan kb:import kb-seed/nomad.json \
+    --workspace="${FUSTERAI_KB_WORKSPACE:-1}" \
+    --kb="${FUSTERAI_KB_NAME:-Nomad Support Playbook}" \
+    --chunk --replace --index 2>&1 | tee -a /dev/stderr
+fi
+
 if [ "${FUSTERAI_RETRY_FAILED:-false}" = "true" ]; then
   echo "[entrypoint] retrying all failed jobs (FUSTERAI_RETRY_FAILED=true)…"
   gosu www-data php artisan queue:retry all 2>&1 | tail -2 || true
