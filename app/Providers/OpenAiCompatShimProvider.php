@@ -69,6 +69,37 @@ class OpenAiCompatShimProvider extends ServiceProvider
                 $changed = true;
             }
 
+            // Prism\Prism\ValueObjects\Usage requires int prompt/completion tokens.
+            // Some gateways (9router glm-5.3 route) send null. Coerce.
+            if ($looksLikeAi && isset($json['usage']) && is_array($json['usage'])) {
+                foreach (['prompt_tokens', 'completion_tokens', 'total_tokens'] as $k) {
+                    if (! array_key_exists($k, $json['usage']) || $json['usage'][$k] === null) {
+                        $json['usage'][$k] = 0;
+                        $changed = true;
+                    }
+                }
+            } elseif ($looksLikeAi && ! isset($json['usage'])) {
+                $json['usage'] = ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0];
+                $changed = true;
+            }
+
+            // Reasoning-model routes (glm-5.3 behind garza-auto) stream tokens into
+            // delta.reasoning_content and leave delta.content empty. Fold reasoning
+            // into content so Prism produces a non-empty final text.
+            if ($looksLikeAi && isset($json['choices']) && is_array($json['choices'])) {
+                foreach ($json['choices'] as &$choice) {
+                    if (isset($choice['message']) && is_array($choice['message'])) {
+                        $c = $choice['message']['content'] ?? '';
+                        $r = $choice['message']['reasoning_content'] ?? '';
+                        if (($c === '' || $c === null) && is_string($r) && $r !== '') {
+                            $choice['message']['content'] = $r;
+                            $changed = true;
+                        }
+                    }
+                }
+                unset($choice);
+            }
+
             if (! $changed) {
                 return $response;
             }
