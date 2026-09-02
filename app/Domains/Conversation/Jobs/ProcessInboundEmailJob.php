@@ -22,6 +22,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -47,8 +48,16 @@ class ProcessInboundEmailJob implements ShouldQueue
 
         $data = $this->emailData;
 
-        // Silently drop auto-replies/OOO emails to prevent infinite loops.
-        if ($this->isAutoReply($data)) {
+        // Drop auto-replies/OOO emails to prevent infinite loops (logged for visibility).
+        if ($reason = $this->autoReplyReason($data)) {
+            Log::info('inbound email dropped as auto-reply', [
+                'mailbox_id' => $mailbox->id,
+                'reason' => $reason,
+                'from' => $data['from_email'] ?? null,
+                'subject' => mb_substr((string) ($data['subject'] ?? ''), 0, 120),
+                'message_id' => $data['message_id'] ?? null,
+            ]);
+
             return;
         }
 
@@ -121,6 +130,15 @@ class ProcessInboundEmailJob implements ShouldQueue
         Hooks::doAction('thread.created', $thread);
 
         // Broadcast real-time update — load relations the frontend expects
+        Log::info('inbound email processed', [
+            'mailbox_id' => $mailbox->id,
+            'conversation_id' => $conversation->id,
+            'thread_id' => $thread->id,
+            'new_conversation' => $conversation->wasRecentlyCreated,
+            'from' => $data['from_email'] ?? null,
+            'subject' => mb_substr((string) ($data['subject'] ?? ''), 0, 120),
+        ]);
+
         broadcast(new NewThreadReceived($thread->load(['user', 'customer', 'attachments'])));
         broadcast(new ConversationUpdated($conversation));
 
@@ -204,40 +222,48 @@ class ProcessInboundEmailJob implements ShouldQueue
      */
     private function isAutoReply(array $data): bool
     {
+        return $this->autoReplyReason($data) !== null;
+    }
+
+    /**
+     * Returns a short reason string when the email should be dropped, else null.
+     */
+    private function autoReplyReason(array $data): ?string
+    {
         $headers = $data['headers'] ?? [];
 
         // Our own auto-reply header
         if (! empty($headers['x_fusterai_auto_reply'])) {
-            return true;
+            return 'x-fusterai-autoreply';
         }
 
         // RFC 3834 — Auto-Submitted header (anything except "no")
         $autoSubmitted = strtolower(trim($headers['auto_submitted'] ?? ''));
         if ($autoSubmitted && $autoSubmitted !== 'no') {
-            return true;
+            return 'auto-submitted:'.$autoSubmitted;
         }
 
         // X-Auto-Response-Suppress present means the sender requests no auto-reply
         // but it also signals this email itself is automated
         if (! empty($headers['x_auto_response_suppress'])) {
-            return true;
+            return 'x-auto-response-suppress:'.mb_substr((string) $headers['x_auto_response_suppress'], 0, 40);
         }
 
         // Precedence: bulk/junk/list are mass-mailing signals — skip auto-reply
         $precedence = strtolower(trim($headers['precedence'] ?? ''));
         if (in_array($precedence, ['bulk', 'junk', 'list'], true)) {
-            return true;
+            return 'precedence:'.$precedence;
         }
 
         // Subject-line heuristics for OOO when headers are missing
         $subject = strtolower($data['subject'] ?? '');
         foreach (['out of office', 'automatic reply', 'auto-reply', 'autoreply', 'vacation reply'] as $marker) {
             if (str_contains($subject, $marker)) {
-                return true;
+                return 'subject:'.$marker;
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
