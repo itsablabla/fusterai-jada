@@ -33,6 +33,15 @@ foreach (\App\Models\Workspace::query()->orderBy('id')->get() as $ws) {
         }
     }
 
+    // Optional overrides for provider/model/base_url (leave unset to keep in-app values)
+    foreach (['FUSTERAI_AI_PROVIDER' => 'ai_provider', 'FUSTERAI_AI_MODEL' => 'ai_model', 'FUSTERAI_AI_BASE_URL' => 'ai_base_url'] as $env => $key) {
+        if (($v = getenv($env)) !== false && $v !== '' && ($s[$key] ?? null) !== $v) {
+            $s[$key] = $v;
+            $changed = true;
+            echo "[ai] workspace {$ws->id}: {$key} set from env {$env}".PHP_EOL;
+        }
+    }
+
     if ((getenv('FUSTERAI_AI_ENABLE_ALL') ?: 'false') === 'true') {
         $s['ai_features'] = array_fill_keys($features, true);
         $s['ai_rag'] = $s['ai_rag'] ?? ['top_k' => 5, 'min_score' => 0.7];
