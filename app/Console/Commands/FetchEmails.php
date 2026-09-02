@@ -47,7 +47,8 @@ class FetchEmails extends Command
             return;
         }
 
-        $this->info("Fetching: {$mailbox->name} <{$mailbox->email}>");
+        $this->info("[emails:fetch] Fetching mailbox id={$mailbox->id} name={$mailbox->name} <{$mailbox->email}>");
+        Log::info('emails:fetch start', ['mailbox_id' => $mailbox->id, 'email' => $mailbox->email, 'host' => $config['host'] ?? null]);
 
         try {
             $cm = new ClientManager;
@@ -78,7 +79,9 @@ class FetchEmails extends Command
             $query->setFetchOrder('desc');
             $messages = $query->limit(max(1, $limit))->get();
 
-            $this->info("  Found {$messages->count()} new message(s) (limit {$limit}".($sinceDays > 0 ? ", last {$sinceDays}d" : '').').');
+            $count = $messages->count();
+            $this->info("[emails:fetch]   Found {$count} new message(s) (limit {$limit}".($sinceDays > 0 ? ", last {$sinceDays}d" : '').').');
+            Log::info('emails:fetch counted', ['mailbox_id' => $mailbox->id, 'count' => $count, 'limit' => $limit, 'since_days' => $sinceDays]);
 
             foreach ($messages as $message) {
                 ProcessInboundEmailJob::dispatch($mailbox->id, [
