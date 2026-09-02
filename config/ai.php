@@ -9,6 +9,9 @@ return [
     */
     'default' => env('AI_DEFAULT_PROVIDER', 'anthropic'),
 
+    // Normalise responses from OpenAI-compatible gateways that omit `model` or append 'data: [DONE]'
+    'compat_shim' => env('AI_COMPAT_SHIM', true),
+
     'providers' => [
         'anthropic' => [
             'driver' => 'anthropic',
