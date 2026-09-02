@@ -19,6 +19,7 @@ use App\Events\AiSuggestionFailed;
 use App\Models\Workspace;
 use App\Services\AiSettingsService;
 use App\Support\SsrfGuard;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -156,8 +157,27 @@ test('IndexKbDocumentJob failed() stores error message in document meta', functi
 });
 
 test('IndexKbDocumentJob handle() clears index_error on successful re-index', function () {
-    // Fake with no preset responses — SDK auto-generates vectors of the right dimensions
-    Embeddings::fake();
+    // The job calls Prism::embeddings() directly, so fake the OpenAI HTTP endpoint
+    // rather than relying on Embeddings::fake().
+    Http::fake([
+        '*/embeddings' => Http::response([
+            'object' => 'list',
+            'data' => [
+                ['object' => 'embedding', 'index' => 0, 'embedding' => array_fill(0, 1536, 0.01)],
+            ],
+            'model' => 'text-embedding-3-small',
+            'usage' => ['prompt_tokens' => 5, 'total_tokens' => 5],
+        ], 200),
+    ]);
+
+    // Give the workspace an OpenAI-compatible AI configuration so the job resolves creds.
+    $this->workspace->update([
+        'settings' => array_merge($this->workspace->settings ?? [], [
+            'ai_provider' => 'openai-compatible',
+            'ai_base_url' => 'https://example.test/v1',
+            'ai_api_key' => Crypt::encryptString('sk-test-key'),
+        ]),
+    ]);
 
     $kb = KnowledgeBase::create(['workspace_id' => $this->workspace->id, 'name' => 'Docs', 'active' => true]);
     $doc = $kb->documents()->create([
