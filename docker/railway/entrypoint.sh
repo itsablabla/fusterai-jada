@@ -51,34 +51,7 @@ fi
 # after the first boot to prevent recreating on redeploys.
 if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD:-}" ]; then
   echo "[entrypoint] bootstrapping admin (${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL})…"
-  gosu www-data php -r '
-    require "/var/www/html/vendor/autoload.php";
-    $app = require "/var/www/html/bootstrap/app.php";
-    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-    $email = getenv("FUSTERAI_BOOTSTRAP_ADMIN_EMAIL");
-    $password = getenv("FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD");
-    $name = getenv("FUSTERAI_BOOTSTRAP_ADMIN_NAME") ?: "Admin";
-    $workspace = getenv("FUSTERAI_BOOTSTRAP_WORKSPACE") ?: "My Support Team";
-    echo "[bootstrap] existing users=" . \App\Models\User::count() . ", workspaces=" . \App\Models\Workspace::count() . PHP_EOL;
-    if (\App\Models\User::where("email", $email)->exists()) {
-      echo "[bootstrap] user $email already exists — skipping" . PHP_EOL;
-      exit(0);
-    }
-    \Illuminate\Support\Facades\DB::transaction(function() use ($workspace, $name, $email, $password) {
-      // Wipe any stray workspace/user left over from earlier deploys so this becomes the very first account.
-      \App\Models\User::query()->forceDelete();
-      \App\Models\Workspace::query()->forceDelete();
-      $u = app(\App\Services\RegistrationService::class)->register([
-        "workspace_name" => $workspace,
-        "name" => $name,
-        "email" => $email,
-        "password" => $password,
-      ]);
-      // Mark email verified so the app doesn't gate on that flow.
-      $u->forceFill(["email_verified_at" => now()])->save();
-      echo "[bootstrap] created workspace={$u->workspace_id} user={$u->id} email={$u->email} role={$u->role}" . PHP_EOL;
-    });
-  ' || echo "[entrypoint] admin bootstrap skipped or failed (see error above)"
+  gosu www-data php /var/www/html/docker/railway/bootstrap-admin.php || echo "[entrypoint] admin bootstrap failed (see error above)"
 fi
 
 # ── Optional mailbox bootstrap (opt-in) ───────────────────────────────────────
@@ -87,46 +60,7 @@ fi
 # every existing user access. Skips if a mailbox with that email already exists.
 if [ -n "${FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_MAILBOX_PASSWORD:-}" ]; then
   echo "[entrypoint] bootstrapping mailbox (${FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL})…"
-  gosu www-data php -r '
-    require "/var/www/html/vendor/autoload.php";
-    $app = require "/var/www/html/bootstrap/app.php";
-    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-    $email = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL");
-    $pass  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_PASSWORD");
-    $name  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_NAME") ?: $email;
-    $user  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_USERNAME") ?: $email;
-    $ws = \App\Models\Workspace::query()->orderBy("id")->first();
-    if (! $ws) { echo "[mailbox] no workspace yet — skipping" . PHP_EOL; exit(0); }
-    if (\App\Domains\Mailbox\Models\Mailbox::where("email", $email)->exists()) {
-      echo "[mailbox] $email already exists — skipping" . PHP_EOL; exit(0);
-    }
-    $mb = \App\Domains\Mailbox\Models\Mailbox::create([
-      "workspace_id" => $ws->id,
-      "name"  => $name,
-      "email" => $email,
-      "channel_type" => "email",
-      "active" => true,
-      "imap_config" => [
-        "host" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_HOST") ?: "imap.zoho.com",
-        "port" => (int) (getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_PORT") ?: 993),
-        "encryption" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_ENCRYPTION") ?: "ssl",
-        "validate_cert" => true,
-        "username" => $user,
-        "password" => $pass,
-      ],
-      "smtp_config" => [
-        "host" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_HOST") ?: "smtp.zoho.com",
-        "port" => (int) (getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_PORT") ?: 465),
-        "encryption" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_ENCRYPTION") ?: "ssl",
-        "username" => $user,
-        "password" => $pass,
-      ],
-    ]);
-    foreach (\App\Models\User::where("workspace_id", $ws->id)->get() as $u) {
-      $mb->users()->syncWithoutDetaching([$u->id]);
-    }
-    echo "[mailbox] created id={$mb->id} email={$mb->email} users=" . $mb->users()->count() . PHP_EOL;
-  ' || echo "[entrypoint] mailbox bootstrap skipped or failed (see error above)"
+  gosu www-data php /var/www/html/docker/railway/bootstrap-mailbox.php || echo "[entrypoint] mailbox bootstrap failed (see error above)"
 fi
 
 # ── Optional demo seed (opt-in) ──────────────────────────────────────────────
