@@ -35,7 +35,7 @@ RUN install-php-extensions \
       pcntl opcache exif
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends supervisor postgresql-client tini \
+ && apt-get install -y --no-install-recommends supervisor postgresql-client tini gosu \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
