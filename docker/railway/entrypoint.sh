@@ -73,6 +73,9 @@ if [ "${FUSTERAI_SEED_DEMO:-false}" = "true" ]; then
 fi
 
 # ── Cache config/routes/views for production ─────────────────────────────────
+# Release stale scheduler mutexes: a killed run can leave withoutOverlapping locks in Redis
+gosu www-data php artisan schedule:clear-cache >/dev/null 2>&1 || true
+
 echo "[entrypoint] priming caches…"
 gosu www-data php artisan config:cache
 gosu www-data php artisan route:cache
