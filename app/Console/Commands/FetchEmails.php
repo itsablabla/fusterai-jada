@@ -96,10 +96,10 @@ class FetchEmails extends Command
                     'attachments' => $this->extractAttachments($message),
                     'cc' => $this->extractCc($message),
                     'headers' => [
-                        'auto_submitted' => (string) ($message->getHeader('Auto-Submitted') ?? ''),
-                        'x_auto_response_suppress' => (string) ($message->getHeader('X-Auto-Response-Suppress') ?? ''),
-                        'precedence' => (string) ($message->getHeader('Precedence') ?? ''),
-                        'x_fusterai_auto_reply' => (string) ($message->getHeader('X-FusterAI-AutoReply') ?? ''),
+                        'auto_submitted' => $this->headerValue($message, 'Auto-Submitted'),
+                        'x_auto_response_suppress' => $this->headerValue($message, 'X-Auto-Response-Suppress'),
+                        'precedence' => $this->headerValue($message, 'Precedence'),
+                        'x_fusterai_auto_reply' => $this->headerValue($message, 'X-FusterAI-AutoReply'),
                     ],
                 ])->onQueue('email-inbound');
 
@@ -108,12 +108,27 @@ class FetchEmails extends Command
             }
 
             $client->disconnect();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->error("  Error fetching {$mailbox->email}: ".$e->getMessage());
             Log::error('FetchEmails failed', [
                 'mailbox_id' => $mailbox->id,
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+    /**
+     * Read a single raw header value. webklex/php-imap's Message::getHeader() takes no
+     * arguments and returns the whole Header object; individual headers are Attributes.
+     */
+    private function headerValue($message, string $name): string
+    {
+        try {
+            $value = $message->getHeader()?->get($name)?->first();
+
+            return is_scalar($value) ? trim((string) $value) : '';
+        } catch (\Throwable) {
+            return '';
         }
     }
 
