@@ -5,8 +5,11 @@ use App\Domains\Mailbox\Models\Mailbox;
 use App\Events\ConversationUpdated;
 use Illuminate\Support\Facades\Schedule;
 
-// Fetch emails every minute
-Schedule::command('emails:fetch')->everyMinute()->withoutOverlapping();
+// Fetch emails every minute. Send output to stderr so it lands in container logs.
+Schedule::command('emails:fetch')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->appendOutputTo('/dev/stderr');
 
 // Wake snoozed conversations back to open
 Schedule::call(function () {
