@@ -7,7 +7,7 @@ use App\Domains\AI\Models\KbDocument;
 use App\Domains\AI\Models\KnowledgeBase;
 use App\Models\Workspace;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Bus;
+
 
 /**
  * Import a JSON file of KB documents into a workspace's active knowledge base.
@@ -108,10 +108,8 @@ class ImportKbFromJson extends Command
         $this->info("Imported {$created} documents into '{$kbName}' (workspace {$workspaceId}).");
 
         if ($shouldIndex) {
-            foreach (array_chunk($indexed, 20) as $batch) {
-                Bus::batch(array_map(fn ($d) => new IndexKbDocumentJob($d), $batch))
-                    ->onQueue('ai')
-                    ->dispatch();
+            foreach ($indexed as $doc) {
+                IndexKbDocumentJob::dispatch($doc);
             }
             $this->info("Dispatched {$created} indexing jobs on the 'ai' queue.");
         }
