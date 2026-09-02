@@ -38,6 +38,36 @@ gosu www-data php artisan migrate --force
 # ── Storage symlink for public uploads ───────────────────────────────────────
 gosu www-data php artisan storage:link --force >/dev/null 2>&1 || true
 
+# ── Optional admin bootstrap (opt-in, non-interactive) ───────────────────────
+# Set FUSTERAI_BOOTSTRAP_ADMIN_EMAIL, _PASSWORD, _NAME (and optional _WORKSPACE)
+# to create the first workspace + admin without opening /register in a browser.
+# The values are read via getenv() inside PHP, never printed. Unset the vars
+# after the first boot to prevent recreating on redeploys.
+if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD:-}" ]; then
+  echo "[entrypoint] bootstrapping admin (${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL})…"
+  gosu www-data php artisan tinker --execute='
+    $email = getenv("FUSTERAI_BOOTSTRAP_ADMIN_EMAIL");
+    $password = getenv("FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD");
+    $name = getenv("FUSTERAI_BOOTSTRAP_ADMIN_NAME") ?: "Admin";
+    $workspace = getenv("FUSTERAI_BOOTSTRAP_WORKSPACE") ?: "My Support Team";
+    if (\App\Models\User::where("email", $email)->exists()) {
+        echo "user_exists\n"; exit;
+    }
+    // Clean slate: purge any pre-existing empty workspace/user so /register logic works
+    \App\Models\User::query()->delete();
+    \App\Models\Workspace::query()->delete();
+    $ws = \App\Models\Workspace::create(["name" => $workspace, "slug" => \Illuminate\Support\Str::slug($workspace)]);
+    $u  = \App\Models\User::create([
+        "workspace_id" => $ws->id,
+        "name" => $name, "email" => $email,
+        "password" => \Illuminate\Support\Facades\Hash::make($password),
+        "email_verified_at" => now(),
+    ]);
+    $u->assignRole("admin");
+    echo "bootstrapped\n";
+  ' || echo "[entrypoint] admin bootstrap skipped or failed (see error above)"
+fi
+
 # ── Optional demo seed (opt-in) ──────────────────────────────────────────────
 if [ "${FUSTERAI_SEED_DEMO:-false}" = "true" ]; then
   HAS_WORKSPACE=$(gosu www-data php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo \App\Models\Workspace::exists() ? "yes" : "no";')
