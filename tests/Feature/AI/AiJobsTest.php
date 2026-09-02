@@ -163,7 +163,7 @@ test('IndexKbDocumentJob handle() clears index_error on successful re-index', fu
         '*/embeddings' => Http::response([
             'object' => 'list',
             'data' => [
-                ['object' => 'embedding', 'index' => 0, 'embedding' => array_fill(0, 1536, 0.01)],
+                ['object' => 'embedding', 'index' => 0, 'embedding' => array_fill(0, 1024, 0.01)],
             ],
             'model' => 'text-embedding-3-small',
             'usage' => ['prompt_tokens' => 5, 'total_tokens' => 5],
