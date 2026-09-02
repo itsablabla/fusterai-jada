@@ -76,6 +76,12 @@ fi
 # Release stale scheduler mutexes: a killed run can leave withoutOverlapping locks in Redis
 gosu www-data php artisan schedule:clear-cache >/dev/null 2>&1 || true
 
+# ── Optional one-shot fetch (opt-in, for debugging) ───────────────────────────
+if [ "${FUSTERAI_TEST_FETCH:-false}" = "true" ]; then
+  echo "[entrypoint] running one-shot emails:fetch (FUSTERAI_TEST_FETCH=true)…"
+  gosu www-data php artisan emails:fetch -vvv 2>&1 | sed 's/^/[emails:fetch] /' || echo "[entrypoint] one-shot emails:fetch failed"
+fi
+
 echo "[entrypoint] priming caches…"
 gosu www-data php artisan config:cache
 gosu www-data php artisan route:cache
