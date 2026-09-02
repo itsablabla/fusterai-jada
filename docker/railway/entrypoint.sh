@@ -38,6 +38,12 @@ gosu www-data php artisan migrate --force
 # ── Storage symlink for public uploads ───────────────────────────────────────
 gosu www-data php artisan storage:link --force >/dev/null 2>&1 || true
 
+# ── Optional: fresh migrate (wipes DB) ───────────────────────────────────────
+if [ "${FUSTERAI_FRESH_MIGRATE:-false}" = "true" ]; then
+  echo "[entrypoint] FUSTERAI_FRESH_MIGRATE=true — dropping all tables and re-migrating…"
+  gosu www-data php artisan migrate:fresh --force
+fi
+
 # ── Optional admin bootstrap (opt-in, non-interactive) ───────────────────────
 # Set FUSTERAI_BOOTSTRAP_ADMIN_EMAIL, _PASSWORD, _NAME (and optional _WORKSPACE)
 # to create the first workspace + admin without opening /register in a browser.
@@ -45,26 +51,32 @@ gosu www-data php artisan storage:link --force >/dev/null 2>&1 || true
 # after the first boot to prevent recreating on redeploys.
 if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD:-}" ]; then
   echo "[entrypoint] bootstrapping admin (${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL})…"
-  gosu www-data php artisan tinker --execute='
+  gosu -E www-data php -r '
+    require "/var/www/html/vendor/autoload.php";
+    $app = require "/var/www/html/bootstrap/app.php";
+    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
     $email = getenv("FUSTERAI_BOOTSTRAP_ADMIN_EMAIL");
     $password = getenv("FUSTERAI_BOOTSTRAP_ADMIN_PASSWORD");
     $name = getenv("FUSTERAI_BOOTSTRAP_ADMIN_NAME") ?: "Admin";
     $workspace = getenv("FUSTERAI_BOOTSTRAP_WORKSPACE") ?: "My Support Team";
+    echo "[bootstrap] existing users=" . \App\Models\User::count() . ", workspaces=" . \App\Models\Workspace::count() . PHP_EOL;
     if (\App\Models\User::where("email", $email)->exists()) {
-        echo "user_exists\n"; exit;
+      echo "[bootstrap] user $email already exists — skipping" . PHP_EOL;
+      exit(0);
     }
-    // Clean slate: purge any pre-existing empty workspace/user so /register logic works
-    \App\Models\User::query()->delete();
-    \App\Models\Workspace::query()->delete();
-    $ws = \App\Models\Workspace::create(["name" => $workspace, "slug" => \Illuminate\Support\Str::slug($workspace)]);
-    $u  = \App\Models\User::create([
+    \Illuminate\Support\Facades\DB::transaction(function() use ($workspace, $name, $email, $password) {
+      \App\Models\User::query()->delete();
+      \App\Models\Workspace::query()->delete();
+      $ws = \App\Models\Workspace::create(["name" => $workspace, "slug" => \Illuminate\Support\Str::slug($workspace)]);
+      $u  = \App\Models\User::create([
         "workspace_id" => $ws->id,
         "name" => $name, "email" => $email,
         "password" => \Illuminate\Support\Facades\Hash::make($password),
         "email_verified_at" => now(),
-    ]);
-    $u->assignRole("admin");
-    echo "bootstrapped\n";
+      ]);
+      $u->assignRole("admin");
+      echo "[bootstrap] created workspace={$ws->id} user={$u->id} email={$u->email}" . PHP_EOL;
+    });
   ' || echo "[entrypoint] admin bootstrap skipped or failed (see error above)"
 fi
 
