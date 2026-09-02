@@ -85,6 +85,12 @@ fi
 # AI settings: report (and optionally enable all features via FUSTERAI_AI_ENABLE_ALL=true)
 gosu www-data php /var/www/html/docker/railway/ai-settings.php 2>&1 || echo "[entrypoint] ai-settings report failed"
 
+# Optional: retry every failed job once (e.g. after fixing AI credentials)
+if [ "${FUSTERAI_RETRY_FAILED:-false}" = "true" ]; then
+  echo "[entrypoint] retrying all failed jobs (FUSTERAI_RETRY_FAILED=true)…"
+  gosu www-data php artisan queue:retry all 2>&1 | tail -2 || true
+fi
+
 # Quick state summary in the boot log (handy for template users and debugging)
 gosu www-data php -r '
   require "/var/www/html/vendor/autoload.php"; $app = require "/var/www/html/bootstrap/app.php";
