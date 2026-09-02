@@ -65,17 +65,18 @@ if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_AD
       exit(0);
     }
     \Illuminate\Support\Facades\DB::transaction(function() use ($workspace, $name, $email, $password) {
-      \App\Models\User::query()->delete();
-      \App\Models\Workspace::query()->delete();
-      $ws = \App\Models\Workspace::create(["name" => $workspace, "slug" => \Illuminate\Support\Str::slug($workspace)]);
-      $u  = \App\Models\User::create([
-        "workspace_id" => $ws->id,
-        "name" => $name, "email" => $email,
-        "password" => \Illuminate\Support\Facades\Hash::make($password),
-        "email_verified_at" => now(),
+      // Wipe any stray workspace/user left over from earlier deploys so this becomes the very first account.
+      \App\Models\User::query()->forceDelete();
+      \App\Models\Workspace::query()->forceDelete();
+      $u = app(\App\Services\RegistrationService::class)->register([
+        "workspace_name" => $workspace,
+        "name" => $name,
+        "email" => $email,
+        "password" => $password,
       ]);
-      $u->assignRole("admin");
-      echo "[bootstrap] created workspace={$ws->id} user={$u->id} email={$u->email}" . PHP_EOL;
+      // Mark email verified so the app doesn't gate on that flow.
+      $u->forceFill(["email_verified_at" => now()])->save();
+      echo "[bootstrap] created workspace={$u->workspace_id} user={$u->id} email={$u->email} role={$u->role}" . PHP_EOL;
     });
   ' || echo "[entrypoint] admin bootstrap skipped or failed (see error above)"
 fi
