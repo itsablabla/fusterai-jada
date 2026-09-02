@@ -108,10 +108,15 @@ class ImportKbFromJson extends Command
         $this->info("Imported {$created} documents into '{$kbName}' (workspace {$workspaceId}).");
 
         if ($shouldIndex) {
-            foreach ($indexed as $doc) {
-                IndexKbDocumentJob::dispatch($doc);
+            // Stagger dispatch so free-tier embed providers (Voyage 3 RPM) don't
+            // fail the whole batch instantly. 25s between jobs = ~2.4 RPM, safely
+            // under the cap. On paid tiers this is negligible; on free tiers it
+            // means the import finishes in ~50 minutes for 117 chunks.
+            $delayStep = (int) env('FUSTERAI_EMBED_DISPATCH_DELAY_SECONDS', 25);
+            foreach (array_values($indexed) as $i => $doc) {
+                IndexKbDocumentJob::dispatch($doc)->delay(now()->addSeconds($i * $delayStep));
             }
-            $this->info("Dispatched {$created} indexing jobs on the 'ai' queue.");
+            $this->info("Dispatched {$created} indexing jobs on the 'ai' queue (staggered {$delayStep}s apart).");
         }
 
         return self::SUCCESS;

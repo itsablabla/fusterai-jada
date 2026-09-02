@@ -21,9 +21,21 @@ class IndexKbDocumentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 3;
+    public int $tries = 8;
 
-    public int $timeout = 60;
+    public int $timeout = 90;
+
+    /**
+     * Exponential-ish backoff so retries drain slowly enough for free-tier
+     * providers (Voyage free tier is 3 RPM without a payment method).
+     * Values in seconds: 25s, 45s, 90s, 180s, 300s, 300s, 300s.
+     *
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [25, 45, 90, 180, 300, 300, 300];
+    }
 
     public function __construct(
         public readonly KbDocument $document,
