@@ -41,11 +41,20 @@ class ReplySuggestionAgent implements Agent, Conversational, HasTools
         Customer name: {$customer?->name}
         Customer email: {$customer?->email}
 
+        MANDATORY FIRST STEP: Before drafting any reply, call the search_knowledge_base tool
+        with a concise query capturing the customer's issue (e.g., "return label", "cancellation refund",
+        "speed troubleshooting", "billing dispute"). The knowledge base contains Nomad Internet's
+        official SOPs and reply templates — you MUST consult it first and quote or paraphrase the
+        relevant policy language in your reply. If the search returns no results, then draft from
+        general customer-support best practices.
+
         Rules:
-        - Address the customer by their first name
+        - Always call search_knowledge_base first; do not skip this step
+        - Address the customer by their first name (or organization name if no first name)
         - Be warm but professional
-        - Reference specific details from the conversation
-        - Use the knowledge base tool if the question may be answered by documentation
+        - Reference specific details from the conversation AND from the knowledge base
+        - Include concrete policy details when the KB provides them (money-back window,
+          prepaid label workflow, refund timing, etc.)
         - Keep replies focused and under 200 words unless the issue demands more detail
         - Do NOT add "Subject:" lines — only the reply body
         - End with a helpful closing and the agent's name if available
