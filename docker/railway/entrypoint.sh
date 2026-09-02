@@ -81,6 +81,54 @@ if [ -n "${FUSTERAI_BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_AD
   ' || echo "[entrypoint] admin bootstrap skipped or failed (see error above)"
 fi
 
+# ── Optional mailbox bootstrap (opt-in) ───────────────────────────────────────
+# FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL / _PASSWORD / _NAME plus IMAP/SMTP host, port,
+# encryption (ssl|tls). Creates one email mailbox in the first workspace and grants
+# every existing user access. Skips if a mailbox with that email already exists.
+if [ -n "${FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL:-}" ] && [ -n "${FUSTERAI_BOOTSTRAP_MAILBOX_PASSWORD:-}" ]; then
+  echo "[entrypoint] bootstrapping mailbox (${FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL})…"
+  gosu www-data php -r '
+    require "/var/www/html/vendor/autoload.php";
+    $app = require "/var/www/html/bootstrap/app.php";
+    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+    $email = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_EMAIL");
+    $pass  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_PASSWORD");
+    $name  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_NAME") ?: $email;
+    $user  = getenv("FUSTERAI_BOOTSTRAP_MAILBOX_USERNAME") ?: $email;
+    $ws = \App\Models\Workspace::query()->orderBy("id")->first();
+    if (! $ws) { echo "[mailbox] no workspace yet — skipping" . PHP_EOL; exit(0); }
+    if (\App\Domains\Mailbox\Models\Mailbox::where("email", $email)->exists()) {
+      echo "[mailbox] $email already exists — skipping" . PHP_EOL; exit(0);
+    }
+    $mb = \App\Domains\Mailbox\Models\Mailbox::create([
+      "workspace_id" => $ws->id,
+      "name"  => $name,
+      "email" => $email,
+      "channel_type" => "email",
+      "active" => true,
+      "imap_config" => [
+        "host" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_HOST") ?: "imap.zoho.com",
+        "port" => (int) (getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_PORT") ?: 993),
+        "encryption" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_IMAP_ENCRYPTION") ?: "ssl",
+        "validate_cert" => true,
+        "username" => $user,
+        "password" => $pass,
+      ],
+      "smtp_config" => [
+        "host" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_HOST") ?: "smtp.zoho.com",
+        "port" => (int) (getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_PORT") ?: 465),
+        "encryption" => getenv("FUSTERAI_BOOTSTRAP_MAILBOX_SMTP_ENCRYPTION") ?: "ssl",
+        "username" => $user,
+        "password" => $pass,
+      ],
+    ]);
+    foreach (\App\Models\User::where("workspace_id", $ws->id)->get() as $u) {
+      $mb->users()->syncWithoutDetaching([$u->id]);
+    }
+    echo "[mailbox] created id={$mb->id} email={$mb->email} users=" . $mb->users()->count() . PHP_EOL;
+  ' || echo "[entrypoint] mailbox bootstrap skipped or failed (see error above)"
+fi
+
 # ── Optional demo seed (opt-in) ──────────────────────────────────────────────
 if [ "${FUSTERAI_SEED_DEMO:-false}" = "true" ]; then
   HAS_WORKSPACE=$(gosu www-data php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo \App\Models\Workspace::exists() ? "yes" : "no";')
