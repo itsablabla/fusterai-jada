@@ -28,8 +28,17 @@ class IndexKbDocumentJob implements ShouldQueue
 
     public function handle(): void
     {
+        // For long documents, embed the head; chunked child documents cover the rest.
+        // Chunks are dispatched by KbSeeder / import commands; each chunk arrives here
+        // as its own KbDocument (parent_id in meta) and just gets its own embedding.
         $text = $this->document->title."\n\n".$this->document->content;
-        $text = mb_substr($text, 0, 8000);
+
+        // Approximate token budget. text-embedding-3-small handles 8192 tokens (~32k chars)
+        // but shorter inputs give tighter cosine matches for short-form Q&A retrieval.
+        $maxChars = (int) config('ai.embeddings.max_chars', 6000);
+        if (mb_strlen($text) > $maxChars) {
+            $text = mb_substr($text, 0, $maxChars);
+        }
 
         app(AiSettingsService::class)->withWorkspaceCredentials(
             $this->document->knowledgeBase->workspace_id,
