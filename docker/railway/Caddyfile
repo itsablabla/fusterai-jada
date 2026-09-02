@@ -1,0 +1,20 @@
+{
+    # FrankenPHP embedded PHP; Railway terminates TLS at the edge
+    frankenphp
+    auto_https off
+    admin off
+    servers {
+        trusted_proxies static private_ranges
+    }
+}
+
+:{$PORT} {
+    root * /var/www/html/public
+    encode zstd gzip
+
+    # Reverb WebSockets run on port 8080 inside the container; expose on same public host
+    @reverb path /app /app/* /apps /apps/*
+    reverse_proxy @reverb 127.0.0.1:8080
+
+    php_server
+}
