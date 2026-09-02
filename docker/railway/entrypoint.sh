@@ -12,6 +12,10 @@ if [ ! -d storage/framework/cache/data ] || [ ! -d storage/app/public ]; then
 fi
 chown -R www-data:www-data storage bootstrap/cache
 
+# ── Template PORT into nginx.conf ────────────────────────────────────────────
+PORT="${PORT:-8000}"
+sed -i "s/__PORT__/${PORT}/g" /etc/nginx/nginx.conf
+
 # ── Passport keys (persist on the storage volume) ────────────────────────────
 if [ ! -f storage/oauth-private.key ] || [ ! -f storage/oauth-public.key ]; then
   echo "[entrypoint] generating Passport OAuth keys…"
