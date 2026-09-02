@@ -10,7 +10,10 @@ use Webklex\PHPIMAP\ClientManager;
 
 class FetchEmails extends Command
 {
-    protected $signature = 'emails:fetch {--mailbox=* : Specific mailbox IDs to fetch}';
+    protected $signature = 'emails:fetch
+                            {--mailbox=* : Specific mailbox IDs to fetch}
+                            {--limit= : Max messages per mailbox per run (default env IMAP_FETCH_LIMIT or 50)}
+                            {--since-days= : Only fetch mail newer than N days (default env IMAP_FETCH_SINCE_DAYS or 3; 0 = no date filter)}';
 
     protected $description = 'Fetch new emails from all active IMAP mailboxes';
 
@@ -61,10 +64,21 @@ class FetchEmails extends Command
 
             $client->connect();
 
-            $folder = $client->getFolder('INBOX');
-            $messages = $folder->query()->unseen()->get();
+            // Bound each run so huge/legacy inboxes (tens of thousands of unseen
+            // messages) don't exhaust memory or import years of history as tickets.
+            $limit = (int) ($this->option('limit') ?: env('IMAP_FETCH_LIMIT', 50));
+            $sinceDays = $this->option('since-days');
+            $sinceDays = $sinceDays === null ? (int) env('IMAP_FETCH_SINCE_DAYS', 3) : (int) $sinceDays;
 
-            $this->info("  Found {$messages->count()} new message(s).");
+            $folder = $client->getFolder('INBOX');
+            $query = $folder->query()->unseen();
+            if ($sinceDays > 0) {
+                $query->since(now()->subDays($sinceDays));
+            }
+            $query->setFetchOrder('desc');
+            $messages = $query->limit(max(1, $limit))->get();
+
+            $this->info("  Found {$messages->count()} new message(s) (limit {$limit}".($sinceDays > 0 ? ", last {$sinceDays}d" : '').').');
 
             foreach ($messages as $message) {
                 ProcessInboundEmailJob::dispatch($mailbox->id, [
