@@ -82,6 +82,17 @@ if [ "${FUSTERAI_TEST_FETCH:-false}" = "true" ]; then
   gosu www-data php artisan emails:fetch -vvv 2>&1 | sed 's/^/[emails:fetch] /' || echo "[entrypoint] one-shot emails:fetch failed"
 fi
 
+# Quick state summary in the boot log (handy for template users and debugging)
+gosu www-data php -r '
+  require "/var/www/html/vendor/autoload.php"; $app = require "/var/www/html/bootstrap/app.php";
+  $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+  printf("[entrypoint] state: workspaces=%d users=%d mailboxes=%d (active=%d) conversations=%d threads=%d customers=%d\n",
+    \App\Models\Workspace::count(), \App\Models\User::count(),
+    \App\Domains\Mailbox\Models\Mailbox::count(), \App\Domains\Mailbox\Models\Mailbox::where("active",true)->count(),
+    \App\Domains\Conversation\Models\Conversation::count(), \Illuminate\Support\Facades\DB::table("threads")->count(),
+    \Illuminate\Support\Facades\DB::table("customers")->count());
+' 2>/dev/null || true
+
 echo "[entrypoint] priming caches…"
 gosu www-data php artisan config:cache
 gosu www-data php artisan route:cache
