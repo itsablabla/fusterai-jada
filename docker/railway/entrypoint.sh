@@ -91,6 +91,12 @@ gosu www-data php -r '
     \App\Domains\Mailbox\Models\Mailbox::count(), \App\Domains\Mailbox\Models\Mailbox::where("active",true)->count(),
     \App\Domains\Conversation\Models\Conversation::count(), \Illuminate\Support\Facades\DB::table("threads")->count(),
     \Illuminate\Support\Facades\DB::table("customers")->count());
+  $q = [];
+  foreach (["default","email-inbound","email-outbound","ai","notifications"] as $name) { $q[] = $name."=".\Illuminate\Support\Facades\Queue::size($name); }
+  printf("[entrypoint] queues: %s | failed_jobs=%d\n", implode(" ", $q), \Illuminate\Support\Facades\DB::table("failed_jobs")->count());
+  foreach (\Illuminate\Support\Facades\DB::table("failed_jobs")->orderByDesc("id")->limit(3)->get() as $f) {
+    printf("[entrypoint] failed: queue=%s %s\n", $f->queue, substr(preg_replace("/\s+/"," ",$f->exception),0,300));
+  }
 ' 2>/dev/null || true
 
 echo "[entrypoint] priming caches…"
